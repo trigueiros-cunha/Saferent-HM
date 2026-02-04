@@ -823,8 +823,12 @@
         
         // QR Code Generation Functions
         function addProperty() {
+            console.log('addProperty called');
             const propertyName = document.getElementById('newPropertyName').value.trim();
             const baseURL = document.getElementById('baseURL').value.trim();
+            
+            console.log('Property name:', propertyName);
+            console.log('Base URL:', baseURL);
             
             if (!propertyName) {
                 alert('Por favor, insira o nome do apartamento');
@@ -836,14 +840,27 @@
                 return;
             }
             
+            // Check for duplicates
+            if (qrProperties.includes(propertyName)) {
+                alert('Este apartamento já foi adicionado!');
+                return;
+            }
+            
             // Add to list
             qrProperties.push(propertyName);
+            console.log('Properties list:', qrProperties);
             
             // Clear input
             document.getElementById('newPropertyName').value = '';
             
             // Update display
-            updateQRCodesList();
+            try {
+                updateQRCodesList();
+                console.log('List updated successfully');
+            } catch (error) {
+                console.error('Error updating list:', error);
+                alert('Erro ao atualizar lista: ' + error.message);
+            }
         }
         
         function removeProperty(index) {
@@ -852,79 +869,98 @@
         }
         
         function updateQRCodesList() {
-            const listContainer = document.getElementById('propertiesList');
-            const qrCodesContainer = document.getElementById('qrCodesList');
-            const baseURL = document.getElementById('baseURL').value.trim();
-            
-            if (qrProperties.length === 0) {
-                listContainer.style.display = 'none';
-                return;
-            }
-            
-            listContainer.style.display = 'block';
-            qrCodesContainer.innerHTML = '';
-            
-            qrProperties.forEach((propertyName, index) => {
-                const fullURL = `${baseURL}?apt=${encodeURIComponent(propertyName)}`;
+            console.log('updateQRCodesList called');
+            try {
+                const listContainer = document.getElementById('propertiesList');
+                const qrCodesContainer = document.getElementById('qrCodesList');
+                const baseURL = document.getElementById('baseURL').value.trim();
                 
-                const card = document.createElement('div');
-                card.style.cssText = 'background: var(--surface); border-radius: 16px; padding: 1.5rem; display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center;';
+                console.log('Containers found:', !!listContainer, !!qrCodesContainer);
+                console.log('Properties count:', qrProperties.length);
                 
-                // QR Code canvas
-                const qrContainer = document.createElement('div');
-                qrContainer.id = `qr-${index}`;
-                qrContainer.style.cssText = 'background: white; padding: 0.75rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
+                if (qrProperties.length === 0) {
+                    listContainer.style.display = 'none';
+                    return;
+                }
                 
-                // Property info
-                const info = document.createElement('div');
-                info.innerHTML = `
-                    <div style="font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
-                        ${propertyName}
-                    </div>
-                    <div style="font-size: 0.85rem; color: var(--text-light); word-break: break-all;">
-                        ${fullURL}
-                    </div>
-                `;
+                listContainer.style.display = 'block';
+                qrCodesContainer.innerHTML = '';
                 
-                // Action buttons
-                const actions = document.createElement('div');
-                actions.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
-                
-                const downloadBtn = document.createElement('button');
-                downloadBtn.textContent = '📥 Baixar';
-                downloadBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
-                downloadBtn.onclick = function() { downloadSingleQR(index, propertyName); };
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.textContent = '🗑 Remover';
-                removeBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-red); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
-                removeBtn.onclick = function() { removeProperty(index); };
-                
-                actions.appendChild(downloadBtn);
-                actions.appendChild(removeBtn);
-                
-                card.appendChild(qrContainer);
-                card.appendChild(info);
-                card.appendChild(actions);
-                qrCodesContainer.appendChild(card);
-                
-                // Generate QR code
-                QRCode.toCanvas(document.createElement('canvas'), fullURL, {
-                    width: 150,
-                    margin: 1,
-                    color: {
-                        dark: '#0A0E27',
-                        light: '#FFFFFF'
-                    }
-                }, function (error, canvas) {
-                    if (error) {
-                        console.error('Erro ao gerar QR:', error);
-                        return;
-                    }
-                    qrContainer.innerHTML = '';
-                    qrContainer.appendChild(canvas);
+                qrProperties.forEach((propertyName, index) => {
+                    console.log('Creating card for:', propertyName, 'index:', index);
+                    const fullURL = `${baseURL}?apt=${encodeURIComponent(propertyName)}`;
+                    
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background: var(--surface); border-radius: 16px; padding: 1.5rem; display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center;';
+                    
+                    // QR Code canvas
+                    const qrContainer = document.createElement('div');
+                    qrContainer.id = `qr-${index}`;
+                    qrContainer.style.cssText = 'background: white; padding: 0.75rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
+                    
+                    // Property info
+                    const info = document.createElement('div');
+                    info.innerHTML = `
+                        <div style="font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+                            ${propertyName}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-light); word-break: break-all;">
+                            ${fullURL}
+                        </div>
+                    `;
+                    
+                    // Action buttons
+                    const actions = document.createElement('div');
+                    actions.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = '📥 Baixar';
+                    downloadBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
+                    downloadBtn.onclick = function() { 
+                        console.log('Download clicked for:', propertyName);
+                        downloadSingleQR(index, propertyName); 
+                    };
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '🗑 Remover';
+                    removeBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-red); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
+                    removeBtn.onclick = function() { 
+                        console.log('Remove clicked for:', index);
+                        removeProperty(index); 
+                    };
+                    
+                    actions.appendChild(downloadBtn);
+                    actions.appendChild(removeBtn);
+                    
+                    card.appendChild(qrContainer);
+                    card.appendChild(info);
+                    card.appendChild(actions);
+                    qrCodesContainer.appendChild(card);
+                    
+                    // Generate QR code
+                    console.log('Generating QR for:', fullURL);
+                    QRCode.toCanvas(document.createElement('canvas'), fullURL, {
+                        width: 150,
+                        margin: 1,
+                        color: {
+                            dark: '#0A0E27',
+                            light: '#FFFFFF'
+                        }
+                    }, function (error, canvas) {
+                        if (error) {
+                            console.error('Erro ao gerar QR:', error);
+                            qrContainer.innerHTML = '<div style="color: red;">Erro ao gerar QR</div>';
+                            return;
+                        }
+                        qrContainer.innerHTML = '';
+                        qrContainer.appendChild(canvas);
+                        console.log('QR generated successfully for:', propertyName);
+                    });
                 });
-            });
+            } catch (error) {
+                console.error('Error in updateQRCodesList:', error);
+                alert('Erro ao atualizar lista: ' + error.message);
+            }
         }
         
         function downloadSingleQR(index, propertyName) {

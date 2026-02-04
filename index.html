@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Apartamentos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap');
+        
+        :root {
+            --primary: #0A0E27;
+            --accent-green: #00FF94;
+            --accent-yellow: #FFD600;
+            --accent-red: #FF3B5C;
+            --surface: #F8F9FB;
+            --surface-dark: #E8EBF0;
+            --text: #1A1D35;
+            --text-light: #6B7280;
+            --border: #D1D5DB;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #F8F9FB 0%, #E8EBF0 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(10, 14, 39, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        
+        .logo span {
+            color: var(--accent-green);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: var(--accent-green);
+            color: var(--primary);
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Dashboard */
+        .dashboard-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 2px solid;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: currentColor;
+        }
+        
+        .stat-card.green {
+            border-color: var(--accent-green);
+            background: linear-gradient(135deg, rgba(0, 255, 148, 0.05) 0%, rgba(0, 255, 148, 0.02) 100%);
+            color: #00CC75;
+        }
+        
+        .stat-card.yellow {
+            border-color: var(--accent-yellow);
+            background: linear-gradient(135deg, rgba(255, 214, 0, 0.05) 0%, rgba(255, 214, 0, 0.02) 100%);
+            color: #CCA700;
+        }
+        
+        .stat-card.red {
+            border-color: var(--accent-red);
+            background: linear-gradient(135deg, rgba(255, 59, 92, 0.05) 0%, rgba(255, 59, 92, 0.02) 100%);
+            color: #CC2E49;
+        }
+        
+        .stat-number {
+            font-family: 'Syne', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0.8;
+        }
+        
+        /* Properties Grid */
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .property-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.8rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .property-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            transition: all 0.3s;
+        }
+        
+        .property-card.status-green::before {
+            background: var(--accent-green);
+        }
+        
+        .property-card.status-yellow::before {
+            background: var(--accent-yellow);
+        }
+        
+        .property-card.status-red::before {
+            background: var(--accent-red);
+        }
+        
+        .property-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+        
+        .property-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .property-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .property-status.green {
+            background: rgba(0, 255, 148, 0.15);
+            color: #00CC75;
+        }
+        
+        .property-status.green .status-dot {
+            background: var(--accent-green);
+        }
+        
+        .property-status.yellow {
+            background: rgba(255, 214, 0, 0.15);
+            color: #CCA700;
+        }
+        
+        .property-status.yellow .status-dot {
+            background: var(--accent-yellow);
+        }
+        
+        .property-status.red {
+            background: rgba(255, 59, 92, 0.15);
+            color: #CC2E49;
+        }
+        
+        .property-status.red .status-dot {
+            background: var(--accent-red);
+        }
+        
+        .property-notes {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+        
+        .property-time {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        
+        /* Scanner Interface */
+        .scanner-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .scanner-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+        
+        .scanner-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .qr-input-section {
+            margin: 2rem 0;
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(0, 255, 148, 0.1);
+        }
+        
+        .status-buttons {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .status-btn {
+            padding: 1.5rem;
+            border: 3px solid;
+            border-radius: 16px;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .status-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .status-btn.green {
+            background: white;
+            border-color: var(--accent-green);
+            color: #00CC75;
+        }
+        
+        .status-btn.green:hover {
+            background: var(--accent-green);
+            color: var(--primary);
+            transform: scale(1.02);
+        }
+        
+        .status-btn.green::before {
+            background: rgba(0, 255, 148, 0.2);
+        }
+        
+        .status-btn.yellow {
+            background: white;
+            border-color: var(--accent-yellow);
+            color: #CCA700;
+        }
+        
+        .status-btn.yellow:hover {
+            background: var(--accent-yellow);
+            color: var(--primary);
+            transform: scale(1.02);
+        }
+        
+        .status-btn.yellow::before {
+            background: rgba(255, 214, 0, 0.2);
+        }
+        
+        .status-btn.red {
+            background: white;
+            border-color: var(--accent-red);
+            color: #CC2E49;
+        }
+        
+        .status-btn.red:hover {
+            background: var(--accent-red);
+            color: white;
+            transform: scale(1.02);
+        }
+        
+        .status-btn.red::before {
+            background: rgba(255, 59, 92, 0.2);
+        }
+        
+        .status-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Notes Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 39, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .notes-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+        
+        .notes-textarea:focus {
+            outline: none;
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.1);
+        }
+        
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .modal-btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn.cancel {
+            background: var(--surface);
+            color: var(--text);
+        }
+        
+        .modal-btn.cancel:hover {
+            background: var(--surface-dark);
+        }
+        
+        .modal-btn.submit {
+            background: var(--accent-green);
+            color: var(--primary);
+        }
+        
+        .modal-btn.submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 148, 0.3);
+        }
+        
+        /* Success Message */
+        .success-message {
+            background: linear-gradient(135deg, var(--accent-green) 0%, #00CC75 100%);
+            color: var(--primary);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: slideDown 0.4s ease;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* QR Code Generator */
+        .qr-generator {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+        
+        .qr-generator h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .qr-form {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .generate-btn {
+            padding: 1rem 2rem;
+            background: var(--accent-green);
+            color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 148, 0.3);
+        }
+        
+        .qr-display {
+            margin-top: 2rem;
+            text-align: center;
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: 16px;
+            display: none;
+        }
+        
+        .qr-display.show {
+            display: block;
+        }
+        
+        .qr-display canvas {
+            margin: 1rem auto;
+            border: 4px solid white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .properties-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Casa<span>Manager</span></div>
+            <nav class="nav-buttons">
+                <button class="nav-btn active" onclick="showScreen('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="showScreen('scanner')">Scanner</button>
+                <button class="nav-btn" onclick="showScreen('generator')">Gerar QR Codes</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Dashboard Screen -->
+        <div id="dashboard" class="screen active">
+            <div class="dashboard-header">
+                <h1 style="font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--primary);">
+                    Visão Geral dos Apartamentos
+                </h1>
+                <div class="stats-grid" id="statsGrid"></div>
+            </div>
+            <div class="properties-grid" id="propertiesGrid"></div>
+        </div>
+
+        <!-- Scanner Screen -->
+        <div id="scanner" class="screen">
+            <div class="scanner-container">
+                <div class="scanner-card">
+                    <h2 class="scanner-title">Reportar Estado</h2>
+                    
+                    <div style="background: var(--surface); border-radius: 16px; padding: 1.5rem; margin: 1.5rem 0; text-align: center;">
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">Apartamento</div>
+                        <div id="scannedPropertyName" style="font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary);"></div>
+                    </div>
+                    
+                    <div class="status-buttons">
+                        <button class="status-btn green" onclick="submitStatus('green')" id="greenBtn">
+                            ✓ PRONTO E OK
+                        </button>
+                        <button class="status-btn yellow" onclick="openNotesModal('yellow')" id="yellowBtn">
+                            ⚠ COM OBSERVAÇÕES
+                        </button>
+                        <button class="status-btn red" onclick="openNotesModal('red')" id="redBtn">
+                            ✕ NÃO HABITÁVEL
+                        </button>
+                    </div>
+                    
+                    <div class="success-message" id="successMessage">
+                        ✓ Estado registado com sucesso!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Generator Screen -->
+        <div id="generator" class="screen">
+            <div style="max-width: 900px; margin: 0 auto;">
+                <div style="background: white; padding: 2.5rem; border-radius: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); margin-bottom: 2rem;">
+                    <h2 style="font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem;">
+                        Gerador de QR Codes
+                    </h2>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">
+                        Crie QR codes para os seus apartamentos. Cada QR code abrirá diretamente a página de reporte para aquele apartamento específico.
+                    </p>
+                    
+                    <!-- URL Base Configuration -->
+                    <div style="background: linear-gradient(135deg, rgba(0, 255, 148, 0.05) 0%, rgba(0, 255, 148, 0.02) 100%); border: 2px solid var(--accent-green); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.75rem; color: var(--primary);">
+                            URL Base da Aplicação
+                        </label>
+                        <input type="text" id="baseURL" class="text-input" 
+                               placeholder="Ex: https://meu-site.com/property-manager.html"
+                               style="margin-bottom: 0.5rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem;">
+                            ℹ️ Cole aqui o URL onde colocou esta aplicação online (GitHub Pages, Netlify, etc.)
+                        </p>
+                    </div>
+
+                    <!-- Add Property Form -->
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; margin-bottom: 2rem;">
+                        <div>
+                            <label class="input-label">Nome do Apartamento</label>
+                            <input type="text" id="newPropertyName" class="text-input" 
+                                   placeholder="Ex: APT-101, Casa Verde, T2-Piso2"
+                                   onkeypress="if(event.key==='Enter') addProperty()">
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button onclick="addProperty()" 
+                                    style="padding: 1rem 2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 12px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s; white-space: nowrap;">
+                                + Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Properties List -->
+                <div id="propertiesList" style="display: none;">
+                    <div style="background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--primary);">
+                                QR Codes Criados
+                            </h3>
+                            <button onclick="downloadAllQRCodes()" 
+                                    style="padding: 0.75rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                                📥 Baixar Todos
+                            </button>
+                        </div>
+                        <div id="qrCodesList" style="display: grid; gap: 1.5rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div class="modal" id="notesModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Adicionar Observações</h3>
+            <textarea id="notesTextarea" class="notes-textarea" 
+                      placeholder="Descreva o que foi observado..."></textarea>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeNotesModal()">Cancelar</button>
+                <button class="modal-btn submit" onclick="submitWithNotes()">Submeter</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        let currentStatus = null;
+        let currentPropertyCode = null;
+        let qrProperties = []; // Store properties for QR generation
+        
+        // Get property code from URL parameter
+        function getPropertyFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('apt') || urlParams.get('apartamento') || urlParams.get('property');
+        }
+        
+        // Initialize on page load
+        function initializePage() {
+            const propertyCode = getPropertyFromURL();
+            
+            if (propertyCode) {
+                // If there's a property in URL, go directly to scanner screen
+                currentPropertyCode = propertyCode;
+                showScreen('scanner');
+                document.getElementById('scannedPropertyName').textContent = propertyCode;
+                
+                // Make scanner tab active
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.nav-btn')[1].classList.add('active'); // Scanner button
+            } else {
+                // Otherwise show dashboard
+                loadDashboard();
+            }
+        }
+        
+        // QR Code Generation Functions
+        function addProperty() {
+            const propertyName = document.getElementById('newPropertyName').value.trim();
+            const baseURL = document.getElementById('baseURL').value.trim();
+            
+            if (!propertyName) {
+                alert('Por favor, insira o nome do apartamento');
+                return;
+            }
+            
+            if (!baseURL) {
+                alert('Por favor, insira o URL base da aplicação');
+                return;
+            }
+            
+            // Add to list
+            qrProperties.push(propertyName);
+            
+            // Clear input
+            document.getElementById('newPropertyName').value = '';
+            
+            // Update display
+            updateQRCodesList();
+        }
+        
+        function removeProperty(index) {
+            qrProperties.splice(index, 1);
+            updateQRCodesList();
+        }
+        
+        function updateQRCodesList() {
+            const listContainer = document.getElementById('propertiesList');
+            const qrCodesContainer = document.getElementById('qrCodesList');
+            const baseURL = document.getElementById('baseURL').value.trim();
+            
+            if (qrProperties.length === 0) {
+                listContainer.style.display = 'none';
+                return;
+            }
+            
+            listContainer.style.display = 'block';
+            qrCodesContainer.innerHTML = '';
+            
+            qrProperties.forEach((propertyName, index) => {
+                const fullURL = `${baseURL}?apt=${encodeURIComponent(propertyName)}`;
+                
+                const card = document.createElement('div');
+                card.style.cssText = 'background: var(--surface); border-radius: 16px; padding: 1.5rem; display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center;';
+                
+                // QR Code canvas
+                const qrContainer = document.createElement('div');
+                qrContainer.id = `qr-${index}`;
+                qrContainer.style.cssText = 'background: white; padding: 0.75rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
+                
+                // Property info
+                const info = document.createElement('div');
+                info.innerHTML = `
+                    <div style="font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+                        ${propertyName}
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-light); word-break: break-all;">
+                        ${fullURL}
+                    </div>
+                `;
+                
+                // Action buttons
+                const actions = document.createElement('div');
+                actions.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
+                actions.innerHTML = `
+                    <button onclick="downloadSingleQR(${index}, '${propertyName}')" 
+                            style="padding: 0.6rem 1.2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;">
+                        📥 Baixar
+                    </button>
+                    <button onclick="removeProperty(${index})" 
+                            style="padding: 0.6rem 1.2rem; background: var(--accent-red); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;">
+                        🗑 Remover
+                    </button>
+                `;
+                
+                card.appendChild(qrContainer);
+                card.appendChild(info);
+                card.appendChild(actions);
+                qrCodesContainer.appendChild(card);
+                
+                // Generate QR code
+                QRCode.toCanvas(document.createElement('canvas'), fullURL, {
+                    width: 150,
+                    margin: 1,
+                    color: {
+                        dark: '#0A0E27',
+                        light: '#FFFFFF'
+                    }
+                }, function (error, canvas) {
+                    if (error) {
+                        console.error('Erro ao gerar QR:', error);
+                        return;
+                    }
+                    qrContainer.innerHTML = '';
+                    qrContainer.appendChild(canvas);
+                });
+            });
+        }
+        
+        function downloadSingleQR(index, propertyName) {
+            const canvas = document.querySelector(`#qr-${index} canvas`);
+            if (!canvas) return;
+            
+            // Convert to larger size for better print quality
+            const baseURL = document.getElementById('baseURL').value.trim();
+            const fullURL = `${baseURL}?apt=${encodeURIComponent(propertyName)}`;
+            
+            QRCode.toCanvas(document.createElement('canvas'), fullURL, {
+                width: 800,
+                margin: 4,
+                color: {
+                    dark: '#0A0E27',
+                    light: '#FFFFFF'
+                }
+            }, function (error, highResCanvas) {
+                if (error) {
+                    console.error('Erro:', error);
+                    return;
+                }
+                
+                // Create download
+                const link = document.createElement('a');
+                link.download = `QR-${propertyName}.png`;
+                link.href = highResCanvas.toDataURL();
+                link.click();
+            });
+        }
+        
+        function downloadAllQRCodes() {
+            if (qrProperties.length === 0) return;
+            
+            const baseURL = document.getElementById('baseURL').value.trim();
+            let processed = 0;
+            
+            qrProperties.forEach((propertyName, index) => {
+                setTimeout(() => {
+                    downloadSingleQR(index, propertyName);
+                    processed++;
+                    
+                    if (processed === qrProperties.length) {
+                        alert(`✓ ${qrProperties.length} QR codes baixados com sucesso!`);
+                    }
+                }, index * 500); // Delay between downloads
+            });
+        }
+        
+        // Storage helper functions
+        async function saveProperty(propertyCode, status, notes = '') {
+            const property = {
+                code: propertyCode,
+                status: status,
+                notes: notes,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                await window.storage.set(`property:${propertyCode}`, JSON.stringify(property), true);
+                return true;
+            } catch (error) {
+                console.error('Erro ao guardar:', error);
+                return false;
+            }
+        }
+        
+        async function getAllProperties() {
+            try {
+                const result = await window.storage.list('property:', true);
+                if (!result || !result.keys) return [];
+                
+                const properties = [];
+                for (const key of result.keys) {
+                    try {
+                        const data = await window.storage.get(key, true);
+                        if (data && data.value) {
+                            properties.push(JSON.parse(data.value));
+                        }
+                    } catch (error) {
+                        console.log('Chave não encontrada:', key);
+                    }
+                }
+                return properties;
+            } catch (error) {
+                console.error('Erro ao carregar propriedades:', error);
+                return [];
+            }
+        }
+        
+        // Screen navigation
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(screenName).classList.add('active');
+            
+            // Find and activate the correct button
+            const buttons = document.querySelectorAll('.nav-btn');
+            if (screenName === 'dashboard') {
+                buttons[0].classList.add('active');
+                loadDashboard();
+            } else if (screenName === 'scanner') {
+                buttons[1].classList.add('active');
+            } else if (screenName === 'generator') {
+                buttons[2].classList.add('active');
+            }
+        }
+        
+        // Submit status
+        async function submitStatus(status, notes = '') {
+            if (!currentPropertyCode) {
+                alert('Erro: Apartamento não identificado');
+                return;
+            }
+            
+            const success = await saveProperty(currentPropertyCode, status, notes);
+            
+            if (success) {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.classList.add('show');
+                
+                // Disable buttons temporarily
+                document.querySelectorAll('.status-btn').forEach(btn => btn.disabled = true);
+                
+                setTimeout(() => {
+                    successMsg.classList.remove('show');
+                    document.querySelectorAll('.status-btn').forEach(btn => btn.disabled = false);
+                }, 2500);
+            } else {
+                alert('Erro ao guardar. Por favor, tente novamente.');
+            }
+        }
+        
+        // Notes modal
+        function openNotesModal(status) {
+            currentStatus = status;
+            document.getElementById('notesModal').classList.add('active');
+            document.getElementById('notesTextarea').value = '';
+            document.getElementById('notesTextarea').focus();
+        }
+        
+        function closeNotesModal() {
+            document.getElementById('notesModal').classList.remove('active');
+            currentStatus = null;
+        }
+        
+        function submitWithNotes() {
+            const notes = document.getElementById('notesTextarea').value.trim();
+            if (!notes) {
+                alert('Por favor, adicione observações');
+                return;
+            }
+            
+            submitStatus(currentStatus, notes);
+            closeNotesModal();
+        }
+        
+        // Dashboard
+        async function loadDashboard() {
+            const properties = await getAllProperties();
+            
+            // Update stats
+            const stats = {
+                green: properties.filter(p => p.status === 'green').length,
+                yellow: properties.filter(p => p.status === 'yellow').length,
+                red: properties.filter(p => p.status === 'red').length
+            };
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card green">
+                    <div class="stat-number">${stats.green}</div>
+                    <div class="stat-label">Prontos</div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-number">${stats.yellow}</div>
+                    <div class="stat-label">Com Observações</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-number">${stats.red}</div>
+                    <div class="stat-label">Não Habitáveis</div>
+                </div>
+            `;
+            
+            // Update properties grid
+            const grid = document.getElementById('propertiesGrid');
+            
+            if (properties.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-light);">
+                        <p style="font-size: 1.2rem;">Nenhum apartamento reportado ainda</p>
+                        <p style="margin-top: 0.5rem;">Aguardando primeira limpeza...</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by timestamp (most recent first)
+            properties.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            grid.innerHTML = properties.map(prop => {
+                const statusText = {
+                    green: 'Pronto e OK',
+                    yellow: 'Com Observações',
+                    red: 'Não Habitável'
+                };
+                
+                const time = new Date(prop.timestamp).toLocaleString('pt-PT', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div class="property-card status-${prop.status}">
+                        <div class="property-name">${prop.code}</div>
+                        <div class="property-status ${prop.status}">
+                            <span class="status-dot"></span>
+                            ${statusText[prop.status]}
+                        </div>
+                        ${prop.notes ? `
+                            <div class="property-notes">
+                                <strong>Observações:</strong><br>
+                                ${prop.notes}
+                            </div>
+                        ` : ''}
+                        <div class="property-time">
+                            Última atualização: ${time}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Initialize page on load
+        initializePage();
+        
+        // Close modal when clicking outside
+        document.getElementById('notesModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeNotesModal();
+            }
+        });
+    </script>
+</body>
+</html>

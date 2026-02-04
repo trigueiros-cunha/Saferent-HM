@@ -889,16 +889,19 @@
                 // Action buttons
                 const actions = document.createElement('div');
                 actions.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
-                actions.innerHTML = `
-                    <button onclick="downloadSingleQR(${index}, '${propertyName}')" 
-                            style="padding: 0.6rem 1.2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;">
-                        📥 Baixar
-                    </button>
-                    <button onclick="removeProperty(${index})" 
-                            style="padding: 0.6rem 1.2rem; background: var(--accent-red); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;">
-                        🗑 Remover
-                    </button>
-                `;
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = '📥 Baixar';
+                downloadBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
+                downloadBtn.onclick = function() { downloadSingleQR(index, propertyName); };
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = '🗑 Remover';
+                removeBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-red); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
+                removeBtn.onclick = function() { removeProperty(index); };
+                
+                actions.appendChild(downloadBtn);
+                actions.appendChild(removeBtn);
                 
                 card.appendChild(qrContainer);
                 card.appendChild(info);

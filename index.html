@@ -790,7 +790,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         let currentStatus = null;
         let currentPropertyCode = null;
@@ -939,23 +939,21 @@
                     
                     // Generate QR code
                     console.log('Generating QR for:', fullURL);
-                    QRCode.toCanvas(document.createElement('canvas'), fullURL, {
-                        width: 150,
-                        margin: 1,
-                        color: {
-                            dark: '#0A0E27',
-                            light: '#FFFFFF'
-                        }
-                    }, function (error, canvas) {
-                        if (error) {
-                            console.error('Erro ao gerar QR:', error);
-                            qrContainer.innerHTML = '<div style="color: red;">Erro ao gerar QR</div>';
-                            return;
-                        }
-                        qrContainer.innerHTML = '';
-                        qrContainer.appendChild(canvas);
+                    qrContainer.innerHTML = ''; // Clear first
+                    try {
+                        new QRCode(qrContainer, {
+                            text: fullURL,
+                            width: 150,
+                            height: 150,
+                            colorDark: '#0A0E27',
+                            colorLight: '#FFFFFF',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
                         console.log('QR generated successfully for:', propertyName);
-                    });
+                    } catch (error) {
+                        console.error('Erro ao gerar QR:', error);
+                        qrContainer.innerHTML = '<div style="color: red; padding: 1rem;">Erro ao gerar QR</div>';
+                    }
                 });
             } catch (error) {
                 console.error('Error in updateQRCodesList:', error);
@@ -964,32 +962,35 @@
         }
         
         function downloadSingleQR(index, propertyName) {
-            const canvas = document.querySelector(`#qr-${index} canvas`);
-            if (!canvas) return;
+            console.log('Download requested for:', propertyName);
+            const qrContainer = document.querySelector(`#qr-${index}`);
+            if (!qrContainer) {
+                console.error('QR container not found');
+                return;
+            }
             
-            // Convert to larger size for better print quality
-            const baseURL = document.getElementById('baseURL').value.trim();
-            const fullURL = `${baseURL}?apt=${encodeURIComponent(propertyName)}`;
+            // Get the canvas or image from the QR code
+            const canvas = qrContainer.querySelector('canvas');
+            const img = qrContainer.querySelector('img');
             
-            QRCode.toCanvas(document.createElement('canvas'), fullURL, {
-                width: 800,
-                margin: 4,
-                color: {
-                    dark: '#0A0E27',
-                    light: '#FFFFFF'
-                }
-            }, function (error, highResCanvas) {
-                if (error) {
-                    console.error('Erro:', error);
-                    return;
-                }
-                
-                // Create download
+            if (canvas) {
+                // If it's a canvas, download directly
                 const link = document.createElement('a');
                 link.download = `QR-${propertyName}.png`;
-                link.href = highResCanvas.toDataURL();
+                link.href = canvas.toDataURL('image/png');
                 link.click();
-            });
+                console.log('Downloaded from canvas');
+            } else if (img) {
+                // If it's an image, download the image
+                const link = document.createElement('a');
+                link.download = `QR-${propertyName}.png`;
+                link.href = img.src;
+                link.click();
+                console.log('Downloaded from image');
+            } else {
+                console.error('No canvas or image found in QR container');
+                alert('Erro: QR code não encontrado');
+            }
         }
         
         function downloadAllQRCodes() {

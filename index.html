@@ -678,6 +678,12 @@
     <div class="container">
         <!-- Dashboard Screen -->
         <div id="dashboard" class="screen active">
+            <!-- Firebase Status Panel -->
+            <div id="firebaseStatus" style="background: white; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);">
+                <h3 style="font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 1rem;">🔥 Status Firebase</h3>
+                <div id="statusInfo">Verificando conexão...</div>
+            </div>
+            
             <div class="dashboard-header">
                 <h1 style="font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--primary);">
                     Visão Geral dos Apartamentos
@@ -795,24 +801,28 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBOaj0avDET1d4skrBnYMGQuiHWNHBUIFw",
-  authDomain: "saferent-gestao.firebaseapp.com",
-  databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "saferent-gestao",
-  storageBucket: "saferent-gestao.firebasestorage.app",
-  messagingSenderId: "275930621637",
-  appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+        // ⚠️ CONFIGURAÇÃO FIREBASE - SUBSTITUA COM AS SUAS CREDENCIAIS
+        // Obtenha em: https://console.firebase.google.com
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY_AQUI",
+            authDomain: "seu-projeto.firebaseapp.com",
+            databaseURL: "https://seu-projeto-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abc123"
+        };
+        
+        // Initialize Firebase
+        let database = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('Firebase connected successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            alert('⚠️ ATENÇÃO: Configure o Firebase no código! Ver instruções no ficheiro INSTRUCOES-FIREBASE.md');
+        }
     </script>
     <script>
         let currentStatus = null;
@@ -821,7 +831,7 @@ const app = initializeApp(firebaseConfig);
         let isAuthenticated = false;
         
         // Simple authentication
-        const ADMIN_PASSWORD = 'admin123'; // MUDE ESTA PASSWORD!
+        const ADMIN_PASSWORD = 'SRcontrolo'; // MUDE ESTA PASSWORD!
         
         function checkAuth() {
             const savedAuth = localStorage.getItem('isAuthenticated');
@@ -1169,6 +1179,63 @@ const app = initializeApp(firebaseConfig);
             });
         }
         
+        // Firebase Status Display
+        function updateFirebaseStatus() {
+            const statusDiv = document.getElementById('statusInfo');
+            if (!statusDiv) return;
+            
+            if (!database) {
+                statusDiv.innerHTML = `
+                    <div style="padding: 1rem; background: #ffebee; border-left: 4px solid #f44336; border-radius: 8px;">
+                        <strong style="color: #c62828;">❌ Firebase NÃO Configurado</strong><br>
+                        <span style="font-size: 0.9rem; color: #666;">
+                            As credenciais do Firebase não estão no código.<br>
+                            Ver ficheiro: INSTRUCOES-FIREBASE.md
+                        </span>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Test connection
+            database.ref('.info/connected').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    // Test if we can write
+                    database.ref('properties').once('value').then((snap) => {
+                        const count = snap.numChildren();
+                        statusDiv.innerHTML = `
+                            <div style="padding: 1rem; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 8px;">
+                                <strong style="color: #2e7d32;">✅ Firebase Conectado & Funcionando</strong><br>
+                                <span style="font-size: 0.9rem; color: #666;">
+                                    Database: ${firebaseConfig.projectId || 'N/A'}<br>
+                                    Apartamentos na base de dados: ${count}
+                                </span>
+                            </div>
+                        `;
+                    }).catch((error) => {
+                        statusDiv.innerHTML = `
+                            <div style="padding: 1rem; background: #ffebee; border-left: 4px solid #f44336; border-radius: 8px;">
+                                <strong style="color: #c62828;">❌ Erro ao ler dados</strong><br>
+                                <span style="font-size: 0.9rem; color: #666;">
+                                    ${error.message}<br>
+                                    Verifique as regras do Firebase!
+                                </span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    statusDiv.innerHTML = `
+                        <div style="padding: 1rem; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px;">
+                            <strong style="color: #e65100;">⚠️ Firebase Desconectado</strong><br>
+                            <span style="font-size: 0.9rem; color: #666;">
+                                Verifique a sua conexão à internet
+                            </span>
+                        </div>
+                    `;
+                }
+            });
+        }
+        
         // Screen navigation
         function showScreen(screenName) {
             // Check authentication for protected screens
@@ -1245,6 +1312,9 @@ const app = initializeApp(firebaseConfig);
         
         // Dashboard
         async function loadDashboard() {
+            // Show Firebase status
+            updateFirebaseStatus();
+            
             const properties = await getAllProperties();
             
             // Update stats

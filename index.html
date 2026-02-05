@@ -791,6 +791,29 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBOaj0avDET1d4skrBnYMGQuiHWNHBUIFw",
+  authDomain: "saferent-gestao.firebaseapp.com",
+  databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "saferent-gestao",
+  storageBucket: "saferent-gestao.firebasestorage.app",
+  messagingSenderId: "275930621637",
+  appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+    </script>
     <script>
         let currentStatus = null;
         let currentPropertyCode = null;
@@ -798,7 +821,7 @@
         let isAuthenticated = false;
         
         // Simple authentication
-        const ADMIN_PASSWORD = 'SRcontrolo'; // MUDE ESTA PASSWORD!
+        const ADMIN_PASSWORD = 'admin123'; // MUDE ESTA PASSWORD!
         
         function checkAuth() {
             const savedAuth = localStorage.getItem('isAuthenticated');
@@ -1083,8 +1106,13 @@
             });
         }
         
-        // Storage helper functions usando localStorage
+        // Storage helper functions usando Firebase Realtime Database
         async function saveProperty(propertyCode, status, notes = '') {
+            if (!database) {
+                alert('❌ Firebase não configurado! Configure primeiro.');
+                return false;
+            }
+            
             const property = {
                 code: propertyCode,
                 status: status,
@@ -1093,42 +1121,52 @@
             };
             
             try {
-                // Save to localStorage
-                localStorage.setItem(`property:${propertyCode}`, JSON.stringify(property));
-                console.log('Property saved:', propertyCode);
+                // Save to Firebase
+                await database.ref('properties/' + propertyCode).set(property);
+                console.log('Property saved to Firebase:', propertyCode);
                 return true;
             } catch (error) {
-                console.error('Erro ao guardar:', error);
+                console.error('Erro ao guardar no Firebase:', error);
                 alert('Erro ao guardar: ' + error.message);
                 return false;
             }
         }
         
         async function getAllProperties() {
-            try {
-                const properties = [];
-                
-                // Get all keys from localStorage
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key.startsWith('property:')) {
-                        try {
-                            const value = localStorage.getItem(key);
-                            if (value) {
-                                properties.push(JSON.parse(value));
-                            }
-                        } catch (error) {
-                            console.log('Erro ao ler chave:', key, error);
-                        }
-                    }
-                }
-                
-                console.log('Loaded properties:', properties.length);
-                return properties;
-            } catch (error) {
-                console.error('Erro ao carregar propriedades:', error);
+            if (!database) {
+                console.log('Firebase not configured, using empty data');
                 return [];
             }
+            
+            try {
+                const snapshot = await database.ref('properties').once('value');
+                const data = snapshot.val();
+                
+                if (!data) {
+                    console.log('No properties found in Firebase');
+                    return [];
+                }
+                
+                // Convert object to array
+                const properties = Object.values(data);
+                console.log('Loaded properties from Firebase:', properties.length);
+                return properties;
+            } catch (error) {
+                console.error('Erro ao carregar do Firebase:', error);
+                return [];
+            }
+        }
+        
+        // Real-time listener for dashboard updates
+        function setupRealtimeListener() {
+            if (!database) return;
+            
+            database.ref('properties').on('value', (snapshot) => {
+                console.log('Firebase data updated, reloading dashboard');
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    loadDashboard();
+                }
+            });
         }
         
         // Screen navigation
@@ -1285,6 +1323,9 @@
         
         // Initialize page on load
         initializePage();
+        
+        // Setup real-time updates
+        setupRealtimeListener();
         
         // Close modal when clicking outside
         document.getElementById('notesModal').addEventListener('click', function(e) {

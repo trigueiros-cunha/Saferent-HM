@@ -795,6 +795,37 @@
         let currentStatus = null;
         let currentPropertyCode = null;
         let qrProperties = []; // Store properties for QR generation
+        let isAuthenticated = false;
+        
+        // Simple authentication
+        const ADMIN_PASSWORD = 'SRcontrolo'; // MUDE ESTA PASSWORD!
+        
+        function checkAuth() {
+            const savedAuth = localStorage.getItem('isAuthenticated');
+            if (savedAuth === 'true') {
+                isAuthenticated = true;
+                return true;
+            }
+            return false;
+        }
+        
+        function promptPassword() {
+            const password = prompt('Introduza a password de administrador:');
+            if (password === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                localStorage.setItem('isAuthenticated', 'true');
+                return true;
+            } else {
+                alert('Password incorreta!');
+                return false;
+            }
+        }
+        
+        function logout() {
+            isAuthenticated = false;
+            localStorage.removeItem('isAuthenticated');
+            location.reload();
+        }
         
         // Get property code from URL parameter
         function getPropertyFromURL() {
@@ -808,17 +839,58 @@
             
             if (propertyCode) {
                 // If there's a property in URL, go directly to scanner screen
+                // This is for cleaning staff - no authentication needed
                 currentPropertyCode = propertyCode;
-                showScreen('scanner');
-                document.getElementById('scannedPropertyName').textContent = propertyCode;
                 
-                // Make scanner tab active
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.nav-btn')[1].classList.add('active'); // Scanner button
+                // Hide navigation for cleaning staff
+                document.querySelector('.nav-buttons').style.display = 'none';
+                
+                // Only show scanner screen
+                showScreenDirect('scanner');
+                document.getElementById('scannedPropertyName').textContent = propertyCode;
             } else {
-                // Otherwise show dashboard
+                // No property code - this is admin access
+                // Check authentication
+                if (!checkAuth()) {
+                    if (!promptPassword()) {
+                        // Password incorrect - show error and hide everything
+                        document.body.innerHTML = `
+                            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--primary); color: white; text-align: center; padding: 2rem;">
+                                <div>
+                                    <h1 style="font-family: 'Syne', sans-serif; font-size: 2rem; margin-bottom: 1rem;">Acesso Negado</h1>
+                                    <p>Password incorreta</p>
+                                    <button onclick="location.reload()" style="margin-top: 2rem; padding: 1rem 2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">
+                                        Tentar Novamente
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+                
+                // Authenticated - add logout button
+                addLogoutButton();
+                
+                // Show dashboard by default
                 loadDashboard();
             }
+        }
+        
+        function addLogoutButton() {
+            const navButtons = document.querySelector('.nav-buttons');
+            const logoutBtn = document.createElement('button');
+            logoutBtn.className = 'nav-btn';
+            logoutBtn.textContent = '🚪 Sair';
+            logoutBtn.onclick = logout;
+            logoutBtn.style.background = 'rgba(255, 59, 92, 0.2)';
+            navButtons.appendChild(logoutBtn);
+        }
+        
+        function showScreenDirect(screenName) {
+            // Direct show without authentication check
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenName).classList.add('active');
         }
         
         // QR Code Generation Functions
@@ -1011,7 +1083,7 @@
             });
         }
         
-        // Storage helper functions
+        // Storage helper functions usando localStorage
         async function saveProperty(propertyCode, status, notes = '') {
             const property = {
                 code: propertyCode,
@@ -1021,30 +1093,37 @@
             };
             
             try {
-                await window.storage.set(`property:${propertyCode}`, JSON.stringify(property), true);
+                // Save to localStorage
+                localStorage.setItem(`property:${propertyCode}`, JSON.stringify(property));
+                console.log('Property saved:', propertyCode);
                 return true;
             } catch (error) {
                 console.error('Erro ao guardar:', error);
+                alert('Erro ao guardar: ' + error.message);
                 return false;
             }
         }
         
         async function getAllProperties() {
             try {
-                const result = await window.storage.list('property:', true);
-                if (!result || !result.keys) return [];
-                
                 const properties = [];
-                for (const key of result.keys) {
-                    try {
-                        const data = await window.storage.get(key, true);
-                        if (data && data.value) {
-                            properties.push(JSON.parse(data.value));
+                
+                // Get all keys from localStorage
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('property:')) {
+                        try {
+                            const value = localStorage.getItem(key);
+                            if (value) {
+                                properties.push(JSON.parse(value));
+                            }
+                        } catch (error) {
+                            console.log('Erro ao ler chave:', key, error);
                         }
-                    } catch (error) {
-                        console.log('Chave não encontrada:', key);
                     }
                 }
+                
+                console.log('Loaded properties:', properties.length);
                 return properties;
             } catch (error) {
                 console.error('Erro ao carregar propriedades:', error);
@@ -1054,6 +1133,12 @@
         
         // Screen navigation
         function showScreen(screenName) {
+            // Check authentication for protected screens
+            if (!isAuthenticated && screenName !== 'scanner') {
+                alert('Acesso não autorizado');
+                return;
+            }
+            
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             

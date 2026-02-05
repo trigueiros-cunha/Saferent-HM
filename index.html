@@ -801,28 +801,24 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
-        // ⚠️ CONFIGURAÇÃO FIREBASE - SUBSTITUA COM AS SUAS CREDENCIAIS
-        // Obtenha em: https://console.firebase.google.com
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY_AQUI",
-            authDomain: "seu-projeto.firebaseapp.com",
-            databaseURL: "https://seu-projeto-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "seu-projeto",
-            storageBucket: "seu-projeto.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abc123"
-        };
-        
-        // Initialize Firebase
-        let database = null;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-            console.log('Firebase connected successfully');
-        } catch (error) {
-            console.error('Firebase initialization error:', error);
-            alert('⚠️ ATENÇÃO: Configure o Firebase no código! Ver instruções no ficheiro INSTRUCOES-FIREBASE.md');
-        }
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBOaj0avDET1d4skrBnYMGQuiHWNHBUIFw",
+  authDomain: "saferent-gestao.firebaseapp.com",
+  databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "saferent-gestao",
+  storageBucket: "saferent-gestao.firebasestorage.app",
+  messagingSenderId: "275930621637",
+  appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
     </script>
     <script>
         let currentStatus = null;

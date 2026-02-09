@@ -806,19 +806,27 @@ import { initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// ⚠️ CONFIGURAÇÃO FIREBASE - SUBSTITUA COM AS SUAS CREDENCIAIS
 const firebaseConfig = {
-  apiKey: "AIzaSyBOaj0avDET1d4skrBnYMGQuiHWNHBUIFw",
-  authDomain: "saferent-gestao.firebaseapp.com",
-  databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "saferent-gestao",
-  storageBucket: "saferent-gestao.firebasestorage.app",
-  messagingSenderId: "275930621637",
-  appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
+    apiKey: "AIzaSyBOaj0avDETid4skr8nYVMQquIHWHhBUIfW",
+    authDomain: "saferent-gestao.firebaseapp.com",
+    databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "saferent-gestao",
+    storageBucket: "saferent-gestao.firebasestorage.app",
+    messagingSenderId: "275930621637",
+    appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let database = null;
+try {
+    firebase.initializeApp(firebaseConfig);
+    database = firebase.database();
+    console.log('Firebase connected successfully');
+} catch (error) {
+    console.error('Firebase initialization error:', error);
+    alert('⚠️ ATENÇÃO: Erro ao inicializar Firebase: ' + error.message);
+}
     </script>
     <script>
         let currentStatus = null;

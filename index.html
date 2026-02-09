@@ -800,34 +800,67 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Firebase Configuration and Initialization -->
     <script>
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// ⚠️ CONFIGURAÇÃO FIREBASE - SUBSTITUA COM AS SUAS CREDENCIAIS
-const firebaseConfig = {
-    apiKey: "AIzaSyBOaj0avDETid4skr8nYVMQquIHWHhBUIfW",
-    authDomain: "saferent-gestao.firebaseapp.com",
-    databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "saferent-gestao",
-    storageBucket: "saferent-gestao.firebasestorage.app",
-    messagingSenderId: "275930621637",
-    appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
-};
-
-// Initialize Firebase
-let database = null;
-try {
-    firebase.initializeApp(firebaseConfig);
-    database = firebase.database();
-    console.log('Firebase connected successfully');
-} catch (error) {
-    console.error('Firebase initialization error:', error);
-    alert('⚠️ ATENÇÃO: Erro ao inicializar Firebase: ' + error.message);
-}
+        console.log('🔥 Starting Firebase initialization...');
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOaj0avDETid4skr8nYVMQquIHWHhBUIfW",
+            authDomain: "saferent-gestao.firebaseapp.com",
+            databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "saferent-gestao",
+            storageBucket: "saferent-gestao.firebasestorage.app",
+            messagingSenderId: "275930621637",
+            appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
+        };
+        
+        // Global variables - declared here to be available everywhere
+        var database = null;
+        var firebaseInitialized = false;
+        var firebaseReady = false;
+        
+        // Initialize Firebase immediately
+        (function() {
+            try {
+                console.log('Initializing Firebase with config:', firebaseConfig);
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                firebaseInitialized = true;
+                
+                console.log('✅ Firebase initialized. Database object:', database);
+                
+                // Wait for connection
+                database.ref('.info/connected').on('value', function(snapshot) {
+                    firebaseReady = snapshot.val() === true;
+                    console.log('Firebase connection status:', firebaseReady ? 'CONNECTED' : 'DISCONNECTED');
+                });
+                
+            } catch (error) {
+                console.error('❌ Firebase initialization failed:', error);
+                alert('Erro ao inicializar Firebase: ' + error.message);
+            }
+        })();
+        
+        // Helper function to wait for Firebase
+        function waitForFirebase(callback, maxAttempts = 50) {
+            let attempts = 0;
+            const checkInterval = setInterval(function() {
+                attempts++;
+                if (database && firebaseInitialized) {
+                    clearInterval(checkInterval);
+                    console.log('✅ Firebase ready after', attempts, 'attempts');
+                    callback();
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    console.error('❌ Firebase not ready after', maxAttempts, 'attempts');
+                    alert('Firebase não conseguiu inicializar. Recarregue a página.');
+                }
+            }, 100);
+        }
     </script>
+    
+    <!-- Main Application Script -->
     <script>
         let currentStatus = null;
         let currentPropertyCode = null;
@@ -1122,8 +1155,16 @@ try {
         
         // Storage helper functions usando Firebase Realtime Database
         async function saveProperty(propertyCode, status, notes = '') {
+            console.log('=== SAVE PROPERTY CALLED ===');
+            console.log('Property Code:', propertyCode);
+            console.log('Status:', status);
+            console.log('Notes:', notes);
+            console.log('Database object:', database);
+            
             if (!database) {
-                alert('❌ Firebase não configurado! Configure primeiro.');
+                const msg = '❌ Firebase não configurado! Configure primeiro.';
+                alert(msg);
+                console.error(msg);
                 return false;
             }
             
@@ -1134,14 +1175,26 @@ try {
                 timestamp: new Date().toISOString()
             };
             
+            console.log('Property object to save:', property);
+            console.log('Path:', 'properties/' + propertyCode);
+            
             try {
-                // Save to Firebase
+                console.log('Attempting to write to Firebase...');
                 await database.ref('properties/' + propertyCode).set(property);
-                console.log('Property saved to Firebase:', propertyCode);
+                console.log('✅ Property saved to Firebase successfully!');
+                alert('✅ Dados guardados com sucesso no Firebase!');
                 return true;
             } catch (error) {
-                console.error('Erro ao guardar no Firebase:', error);
-                alert('Erro ao guardar: ' + error.message);
+                console.error('❌ Erro ao guardar no Firebase:', error);
+                console.error('Error code:', error.code);
+                console.error('Error message:', error.message);
+                
+                let errorMsg = 'Erro ao guardar: ' + error.message;
+                if (error.code === 'PERMISSION_DENIED') {
+                    errorMsg = '❌ PERMISSÃO NEGADA!\n\nVerifique as REGRAS do Firebase:\n1. Vá ao Firebase Console\n2. Realtime Database → Regras\n3. Certifique que ".write": true';
+                }
+                
+                alert(errorMsg);
                 return false;
             }
         }
@@ -1186,43 +1239,64 @@ try {
         // Firebase Status Display
         function updateFirebaseStatus() {
             const statusDiv = document.getElementById('statusInfo');
-            if (!statusDiv) return;
+            if (!statusDiv) {
+                console.log('Status div not found');
+                return;
+            }
             
-            if (!database) {
+            console.log('Updating Firebase status... Database:', database, 'Initialized:', firebaseInitialized);
+            
+            if (!database || !firebaseInitialized) {
                 statusDiv.innerHTML = `
                     <div style="padding: 1rem; background: #ffebee; border-left: 4px solid #f44336; border-radius: 8px;">
                         <strong style="color: #c62828;">❌ Firebase NÃO Configurado</strong><br>
                         <span style="font-size: 0.9rem; color: #666;">
-                            As credenciais do Firebase não estão no código.<br>
-                            Ver ficheiro: INSTRUCOES-FIREBASE.md
+                            As credenciais do Firebase não estão no código ou há erro de inicialização.<br>
+                            Verifique o Console (F12) para mais detalhes.
                         </span>
                     </div>
                 `;
                 return;
             }
             
+            // Show initial loading
+            statusDiv.innerHTML = `
+                <div style="padding: 1rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 8px;">
+                    <strong style="color: #1565c0;">🔄 Conectando ao Firebase...</strong><br>
+                    <span style="font-size: 0.9rem; color: #666;">
+                        Aguarde...
+                    </span>
+                </div>
+            `;
+            
             // Test connection
             database.ref('.info/connected').on('value', (snapshot) => {
+                console.log('Connection status changed:', snapshot.val());
+                
                 if (snapshot.val() === true) {
-                    // Test if we can write
+                    // Test if we can read
                     database.ref('properties').once('value').then((snap) => {
                         const count = snap.numChildren();
+                        console.log('Successfully read from Firebase. Properties count:', count);
+                        
                         statusDiv.innerHTML = `
                             <div style="padding: 1rem; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 8px;">
-                                <strong style="color: #2e7d32;">✅ Firebase Conectado & Funcionando</strong><br>
+                                <strong style="color: #2e7d32;">✅ Firebase Conectado & Funcionando!</strong><br>
                                 <span style="font-size: 0.9rem; color: #666;">
-                                    Database: ${firebaseConfig.projectId || 'N/A'}<br>
-                                    Apartamentos na base de dados: ${count}
+                                    Projeto: ${firebaseConfig.projectId}<br>
+                                    Apartamentos registados: ${count}
                                 </span>
                             </div>
                         `;
                     }).catch((error) => {
+                        console.error('Error reading from Firebase:', error);
+                        
                         statusDiv.innerHTML = `
                             <div style="padding: 1rem; background: #ffebee; border-left: 4px solid #f44336; border-radius: 8px;">
-                                <strong style="color: #c62828;">❌ Erro ao ler dados</strong><br>
+                                <strong style="color: #c62828;">❌ Erro ao ler dados do Firebase</strong><br>
                                 <span style="font-size: 0.9rem; color: #666;">
                                     ${error.message}<br>
-                                    Verifique as regras do Firebase!
+                                    ${error.code === 'PERMISSION_DENIED' ? 'Verifique as REGRAS do Firebase!' : 'Verifique a configuração.'}
                                 </span>
                             </div>
                         `;
@@ -1232,7 +1306,7 @@ try {
                         <div style="padding: 1rem; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px;">
                             <strong style="color: #e65100;">⚠️ Firebase Desconectado</strong><br>
                             <span style="font-size: 0.9rem; color: #666;">
-                                Verifique a sua conexão à internet
+                                Verifique a sua conexão à internet ou as configurações do Firebase
                             </span>
                         </div>
                     `;
@@ -1395,11 +1469,13 @@ try {
             }).join('');
         }
         
-        // Initialize page on load
-        initializePage();
-        
-        // Setup real-time updates
-        setupRealtimeListener();
+        // Initialize on page load - WAIT FOR FIREBASE
+        console.log('Waiting for Firebase before initializing page...');
+        waitForFirebase(function() {
+            console.log('Firebase ready! Initializing page...');
+            initializePage();
+            setupRealtimeListener();
+        });
         
         // Close modal when clicking outside
         document.getElementById('notesModal').addEventListener('click', function(e) {

@@ -1182,7 +1182,7 @@
                 console.log('Attempting to write to Firebase...');
                 await database.ref('properties/' + propertyCode).set(property);
                 console.log('✅ Property saved to Firebase successfully!');
-                alert('✅ Dados guardados com sucesso no Firebase!');
+                alert('✅ Dados guardados com sucesso!');
                 return true;
             } catch (error) {
                 console.error('❌ Erro ao guardar no Firebase:', error);

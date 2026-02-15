@@ -1,1488 +1,430 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Apartamentos</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap');
-        
-        :root {
-            --primary: #0A0E27;
-            --accent-green: #00FF94;
-            --accent-yellow: #FFD600;
-            --accent-red: #FF3B5C;
-            --surface: #F8F9FB;
-            --surface-dark: #E8EBF0;
-            --text: #1A1D35;
-            --text-light: #6B7280;
-            --border: #D1D5DB;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: linear-gradient(135deg, #F8F9FB 0%, #E8EBF0 100%);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        /* Header */
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 4px 20px rgba(10, 14, 39, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-        
-        .logo span {
-            color: var(--accent-green);
-        }
-        
-        .nav-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .nav-btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 12px;
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            backdrop-filter: blur(10px);
-        }
-        
-        .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .nav-btn.active {
-            background: var(--accent-green);
-            color: var(--primary);
-        }
-        
-        /* Main Container */
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-        
-        /* Screens */
-        .screen {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Dashboard */
-        .dashboard-header {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-        
-        .stat-card {
-            padding: 1.5rem;
-            border-radius: 16px;
-            border: 2px solid;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: currentColor;
-        }
-        
-        .stat-card.green {
-            border-color: var(--accent-green);
-            background: linear-gradient(135deg, rgba(0, 255, 148, 0.05) 0%, rgba(0, 255, 148, 0.02) 100%);
-            color: #00CC75;
-        }
-        
-        .stat-card.yellow {
-            border-color: var(--accent-yellow);
-            background: linear-gradient(135deg, rgba(255, 214, 0, 0.05) 0%, rgba(255, 214, 0, 0.02) 100%);
-            color: #CCA700;
-        }
-        
-        .stat-card.red {
-            border-color: var(--accent-red);
-            background: linear-gradient(135deg, rgba(255, 59, 92, 0.05) 0%, rgba(255, 59, 92, 0.02) 100%);
-            color: #CC2E49;
-        }
-        
-        .stat-number {
-            font-family: 'Syne', sans-serif;
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1;
-        }
-        
-        .stat-label {
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            opacity: 0.8;
-        }
-        
-        /* Properties Grid */
-        .properties-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .property-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.8rem;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .property-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            transition: all 0.3s;
-        }
-        
-        .property-card.status-green::before {
-            background: var(--accent-green);
-        }
-        
-        .property-card.status-yellow::before {
-            background: var(--accent-yellow);
-        }
-        
-        .property-card.status-red::before {
-            background: var(--accent-red);
-        }
-        
-        .property-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-        
-        .property-name {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-        
-        .property-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .property-status.green {
-            background: rgba(0, 255, 148, 0.15);
-            color: #00CC75;
-        }
-        
-        .property-status.green .status-dot {
-            background: var(--accent-green);
-        }
-        
-        .property-status.yellow {
-            background: rgba(255, 214, 0, 0.15);
-            color: #CCA700;
-        }
-        
-        .property-status.yellow .status-dot {
-            background: var(--accent-yellow);
-        }
-        
-        .property-status.red {
-            background: rgba(255, 59, 92, 0.15);
-            color: #CC2E49;
-        }
-        
-        .property-status.red .status-dot {
-            background: var(--accent-red);
-        }
-        
-        .property-notes {
-            background: var(--surface);
-            padding: 1rem;
-            border-radius: 12px;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: var(--text);
-        }
-        
-        .property-time {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-            font-size: 0.85rem;
-            color: var(--text-light);
-        }
-        
-        /* Scanner Interface */
-        .scanner-container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
-        .scanner-card {
-            background: white;
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-        
-        .scanner-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-        
-        .qr-input-section {
-            margin: 2rem 0;
-        }
-        
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .input-label {
-            display: block;
-            text-align: left;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-        }
-        
-        .text-input {
-            width: 100%;
-            padding: 1rem 1.25rem;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        .text-input:focus {
-            outline: none;
-            border-color: var(--accent-green);
-            box-shadow: 0 0 0 3px rgba(0, 255, 148, 0.1);
-        }
-        
-        .status-buttons {
-            display: grid;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .status-btn {
-            padding: 1.5rem;
-            border: 3px solid;
-            border-radius: 16px;
-            font-family: 'Syne', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .status-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .status-btn:active::before {
-            width: 300px;
-            height: 300px;
-        }
-        
-        .status-btn.green {
-            background: white;
-            border-color: var(--accent-green);
-            color: #00CC75;
-        }
-        
-        .status-btn.green:hover {
-            background: var(--accent-green);
-            color: var(--primary);
-            transform: scale(1.02);
-        }
-        
-        .status-btn.green::before {
-            background: rgba(0, 255, 148, 0.2);
-        }
-        
-        .status-btn.yellow {
-            background: white;
-            border-color: var(--accent-yellow);
-            color: #CCA700;
-        }
-        
-        .status-btn.yellow:hover {
-            background: var(--accent-yellow);
-            color: var(--primary);
-            transform: scale(1.02);
-        }
-        
-        .status-btn.yellow::before {
-            background: rgba(255, 214, 0, 0.2);
-        }
-        
-        .status-btn.red {
-            background: white;
-            border-color: var(--accent-red);
-            color: #CC2E49;
-        }
-        
-        .status-btn.red:hover {
-            background: var(--accent-red);
-            color: white;
-            transform: scale(1.02);
-        }
-        
-        .status-btn.red::before {
-            background: rgba(255, 59, 92, 0.2);
-        }
-        
-        .status-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* Notes Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(10, 14, 39, 0.7);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s;
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 2.5rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .modal-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-        }
-        
-        .notes-textarea {
-            width: 100%;
-            min-height: 150px;
-            padding: 1rem;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1rem;
-            resize: vertical;
-            transition: all 0.3s;
-        }
-        
-        .notes-textarea:focus {
-            outline: none;
-            border-color: var(--accent-yellow);
-            box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.1);
-        }
-        
-        .modal-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        
-        .modal-btn {
-            padding: 1rem;
-            border: none;
-            border-radius: 12px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .modal-btn.cancel {
-            background: var(--surface);
-            color: var(--text);
-        }
-        
-        .modal-btn.cancel:hover {
-            background: var(--surface-dark);
-        }
-        
-        .modal-btn.submit {
-            background: var(--accent-green);
-            color: var(--primary);
-        }
-        
-        .modal-btn.submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 148, 0.3);
-        }
-        
-        /* Success Message */
-        .success-message {
-            background: linear-gradient(135deg, var(--accent-green) 0%, #00CC75 100%);
-            color: var(--primary);
-            padding: 1.5rem;
-            border-radius: 16px;
-            margin-top: 2rem;
-            font-weight: 600;
-            text-align: center;
-            display: none;
-            animation: slideDown 0.4s ease;
-        }
-        
-        .success-message.show {
-            display: block;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* QR Code Generator */
-        .qr-generator {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-        }
-        
-        .qr-generator h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-        }
-        
-        .qr-form {
-            display: grid;
-            gap: 1rem;
-        }
-        
-        .generate-btn {
-            padding: 1rem 2rem;
-            background: var(--accent-green);
-            color: var(--primary);
-            border: none;
-            border-radius: 12px;
-            font-family: 'Syne', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .generate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 148, 0.3);
-        }
-        
-        .qr-display {
-            margin-top: 2rem;
-            text-align: center;
-            padding: 2rem;
-            background: var(--surface);
-            border-radius: 16px;
-            display: none;
-        }
-        
-        .qr-display.show {
-            display: block;
-        }
-        
-        .qr-display canvas {
-            margin: 1rem auto;
-            border: 4px solid white;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 1rem;
-            }
-            
-            .nav-buttons {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .properties-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiffSpace — Plataforma de Gestão</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+--bg:#04040a;--bg2:#080810;--bgH:#0c0e18;--bgM:#0a0c16;--bgSb:#06060e;
+--bgHd:rgba(4,4,10,.94);--bgIn:#0a0a14;--bgTab:#1e293b;
+--bd:#0f1420;--bdL:#141420;--bdH:#1e293b;--bdIn:#1e293b;
+--tx:#e2e8f0;--txS:#94a3b8;--txM:#64748b;--txF:#475569;--txG:#334155;
+--grn:#22c55e;--ylw:#f59e0b;--red:#ef4444;--blu:#3b82f6;--pur:#8b5cf6;--cyn:#06b6d4;--pk:#ec4899;
+--sh:rgba(0,0,0,.15);--shM:rgba(0,0,0,.25);
+--mono:'IBM Plex Mono',monospace;--sans:'DM Sans',sans-serif;--head:'Syne',sans-serif;
+}
+[data-theme="light"]{
+--bg:#f7f8fb;--bg2:#fff;--bgH:#f1f5f9;--bgM:#f4f6fa;--bgSb:#06060e;
+--bgHd:rgba(247,248,251,.96);--bgIn:#fff;--bgTab:#e2e8f0;
+--bd:#e2e8f0;--bdL:#edf0f4;--bdH:#cbd5e1;--bdIn:#cbd5e1;
+--tx:#0f172a;--txS:#475569;--txM:#64748b;--txF:#94a3b8;--txG:#b0bec5;
+--sh:rgba(0,0,0,.04);--shM:rgba(0,0,0,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);min-height:100vh;display:flex;transition:background .4s,color .4s}
+
+.sb{width:220px;background:var(--bgSb);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sb-logo{padding:16px 16px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.sb-logo i{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--blu),var(--cyn));display:flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--head);font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.sb-logo span{font-family:var(--head);font-size:16px;font-weight:700;color:#fff;letter-spacing:-.5px}
+.sb-nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nb{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.4);font-size:13px;font-weight:400;border:none;background:transparent;width:100%;text-align:left;font-family:var(--sans)}
+.nb:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.7)}
+.nb.on{color:#fff;font-weight:600}
+.nb .ic{font-size:16px;width:22px;text-align:center;flex-shrink:0;font-style:normal}
+.nb .desc{font-size:10px;color:rgba(255,255,255,.2)}
+.nb.on .desc{color:rgba(255,255,255,.3)}
+.sb-ft{padding:12px 8px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-ft .nb{font-size:12px;padding:8px 12px;color:rgba(255,255,255,.3)}
+
+.mn{margin-left:220px;flex:1;min-height:100vh}
+.topbar{padding:12px 28px;border-bottom:1px solid var(--bd);background:var(--bgHd);backdrop-filter:blur(12px);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.ct{padding:24px 28px;max-width:1100px}
+
+.vw{display:none;animation:fi .35s ease}.vw.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.stat{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:16px 14px;position:relative;overflow:hidden;transition:all .3s}
+.stat .sl{font-size:10px;color:var(--txF);font-family:var(--mono);letter-spacing:.5px;margin-bottom:6px}
+.stat .sv{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1}
+.stat .si{position:absolute;top:12px;right:14px;font-size:20px;opacity:.12;font-style:normal}
+.stat .ss{font-size:11px;color:var(--txG);margin-top:4px}
+
+.bg{font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--mono);white-space:nowrap;font-weight:500;display:inline-flex;align-items:center;gap:3px}
+.cd{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;transition:all .2s}
+.cd:hover{border-color:var(--bdH)}
+.cdc{cursor:pointer}.cdc:hover{background:var(--bgH)}
+
+.fb{padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--mono);border:1px solid var(--bdL);background:transparent;color:var(--txF);transition:all .2s}
+.fb:hover{border-color:var(--bdH);color:var(--tx)}
+
+.mcard{background:var(--bgM);border:1px solid var(--bd);border-radius:14px;padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.mcard:hover{transform:translateY(-2px);box-shadow:0 4px 16px var(--shM)}
+.mcard .circle{position:absolute;top:-10px;right:-10px;width:60px;height:60px;border-radius:50%}
+
+.sect{font-size:11px;color:var(--txS);font-family:var(--mono);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase}
+
+.alrt{flex:1;min-width:200px;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s}
+.alrt:hover{transform:translateY(-1px)}
+
+.inp{width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--bdIn);background:var(--bgIn);color:var(--tx);font-size:13px;font-family:var(--sans);outline:none;box-sizing:border-box}
+.inp:focus{border-color:var(--blu)}
+
+@media(max-width:768px){
+.sb{width:60px}.sb-logo span,.nb span:not(.ic),.nb .desc{display:none}.nb{justify-content:center;padding:11px}
+.mn{margin-left:60px}.ct{padding:16px}.sb-logo{justify-content:center;padding:16px}
+}
+</style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">Casa<span>Manager</span></div>
-            <nav class="nav-buttons">
-                <button class="nav-btn active" onclick="showScreen('dashboard')">Dashboard</button>
-                <button class="nav-btn" onclick="showScreen('scanner')">Scanner</button>
-                <button class="nav-btn" onclick="showScreen('generator')">Gerar QR Codes</button>
-            </nav>
-        </div>
-    </header>
+<aside class="sb">
+<div class="sb-logo"><i>◐</i><span>DiffSpace</span></div>
+<nav class="sb-nav" id="navBtns"></nav>
+<div class="sb-ft">
+<button class="nb" onclick="toggleTheme()"><span class="ic" id="thIc">☀</span><span id="thLb">Modo claro</span></button>
+</div>
+</aside>
 
-    <div class="container">
-        <!-- Dashboard Screen -->
-        <div id="dashboard" class="screen active">
-            <!-- Firebase Status Panel -->
-            <div id="firebaseStatus" style="background: white; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);">
-                <h3 style="font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 1rem;">🔥 Status Firebase</h3>
-                <div id="statusInfo">Verificando conexão...</div>
-            </div>
-            
-            <div class="dashboard-header">
-                <h1 style="font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--primary);">
-                    Visão Geral dos Apartamentos
-                </h1>
-                <div class="stats-grid" id="statsGrid"></div>
-            </div>
-            <div class="properties-grid" id="propertiesGrid"></div>
-        </div>
+<div class="mn">
+<div class="topbar">
+<div style="font-size:14px;color:var(--txS);font-weight:500" id="topTitle">◐ Visão Geral</div>
+<div style="display:flex;align-items:center;gap:10px">
+<div style="font-size:11px;color:var(--txF);font-family:var(--mono)">João Mendes</div>
+<span class="bg" style="background:rgba(139,92,246,.15);color:var(--pur);border:1px solid rgba(139,92,246,.3)">👑 Manager</span>
+</div>
+</div>
+<div class="ct">
+<div id="vOverview" class="vw on"></div>
+<div id="vProperties" class="vw"></div>
+<div id="vDiffscan" class="vw"></div>
+<div id="vCleancheck" class="vw"></div>
+<div id="vMaintenance" class="vw"></div>
+<div id="vTeam" class="vw"></div>
+</div>
+</div>
 
-        <!-- Scanner Screen -->
-        <div id="scanner" class="screen">
-            <div class="scanner-container">
-                <div class="scanner-card">
-                    <h2 class="scanner-title">Reportar Estado</h2>
-                    
-                    <div style="background: var(--surface); border-radius: 16px; padding: 1.5rem; margin: 1.5rem 0; text-align: center;">
-                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">Apartamento</div>
-                        <div id="scannedPropertyName" style="font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary);"></div>
-                    </div>
-                    
-                    <div class="status-buttons">
-                        <button class="status-btn green" onclick="submitStatus('green')" id="greenBtn">
-                            ✓ PRONTO E OK
-                        </button>
-                        <button class="status-btn yellow" onclick="openNotesModal('yellow')" id="yellowBtn">
-                            ⚠ COM OBSERVAÇÕES
-                        </button>
-                        <button class="status-btn red" onclick="openNotesModal('red')" id="redBtn">
-                            ✕ NÃO HABITÁVEL
-                        </button>
-                    </div>
-                    
-                    <div class="success-message" id="successMessage">
-                        ✓ Estado registado com sucesso!
-                    </div>
-                </div>
-            </div>
-        </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+/* ═══ FIREBASE ═══ */
+var db=null;
+try{firebase.initializeApp({apiKey:"AIzaSyBOaj0avDETid4skr8nYVMQquIHWHhBUIfW",authDomain:"saferent-gestao.firebaseapp.com",databaseURL:"https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",projectId:"saferent-gestao",storageBucket:"saferent-gestao.firebasestorage.app",messagingSenderId:"275930621637",appId:"1:275930621637:web:868f72cd38e96b7b62f2ac"});db=firebase.database()}catch(e){console.error(e)}
 
-        <!-- QR Code Generator Screen -->
-        <div id="generator" class="screen">
-            <div style="max-width: 900px; margin: 0 auto;">
-                <div style="background: white; padding: 2.5rem; border-radius: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); margin-bottom: 2rem;">
-                    <h2 style="font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem;">
-                        Gerador de QR Codes
-                    </h2>
-                    <p style="color: var(--text-light); margin-bottom: 2rem;">
-                        Crie QR codes para os seus apartamentos. Cada QR code abrirá diretamente a página de reporte para aquele apartamento específico.
-                    </p>
-                    
-                    <!-- URL Base Configuration -->
-                    <div style="background: linear-gradient(135deg, rgba(0, 255, 148, 0.05) 0%, rgba(0, 255, 148, 0.02) 100%); border: 2px solid var(--accent-green); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.75rem; color: var(--primary);">
-                            URL Base da Aplicação
-                        </label>
-                        <input type="text" id="baseURL" class="text-input" 
-                               placeholder="Ex: https://meu-site.com/property-manager.html"
-                               style="margin-bottom: 0.5rem;">
-                        <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem;">
-                            ℹ️ Cole aqui o URL onde colocou esta aplicação online (GitHub Pages, Netlify, etc.)
-                        </p>
-                    </div>
+/* ═══ MOCK DATA ═══ */
+const USERS=[
+{id:"u1",name:"João Mendes",role:"manager",email:"joao@diffspace.pt",avatar:"👤"},
+{id:"u2",name:"Ana Costa",role:"home_management",email:"ana@diffspace.pt",avatar:"👩"},
+{id:"u3",name:"Carlos Ferreira",role:"cleaning",email:"carlos@diffspace.pt",avatar:"👨"},
+{id:"u4",name:"Rita Sousa",role:"cleaning",email:"rita@diffspace.pt",avatar:"👩"},
+{id:"u5",name:"Miguel Santos",role:"maintenance",email:"miguel@diffspace.pt",avatar:"🔧"},
+{id:"u6",name:"Sofia Oliveira",role:"home_management",email:"sofia@diffspace.pt",avatar:"👩"},
+];
+const ROLES={manager:{label:"Manager",color:"#8b5cf6",icon:"👑",access:"Acesso total"},home_management:{label:"Home Management",color:"#3b82f6",icon:"🏠",access:"DiffScan"},cleaning:{label:"Limpeza",color:"#22c55e",icon:"🧹",access:"CleanCheck"},maintenance:{label:"Manutenção",color:"#f59e0b",icon:"🔧",access:"Manutenção"}};
 
-                    <!-- Add Property Form -->
-                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; margin-bottom: 2rem;">
-                        <div>
-                            <label class="input-label">Nome do Apartamento</label>
-                            <input type="text" id="newPropertyName" class="text-input" 
-                                   placeholder="Ex: APT-101, Casa Verde, T2-Piso2"
-                                   onkeypress="if(event.key==='Enter') addProperty()">
-                        </div>
-                        <div style="display: flex; align-items: flex-end;">
-                            <button onclick="addProperty()" 
-                                    style="padding: 1rem 2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 12px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s; white-space: nowrap;">
-                                + Adicionar
-                            </button>
-                        </div>
-                    </div>
-                </div>
+const PROPS=[
+{id:"P1",name:"Apt. Ribeira T2",address:"Rua de São João 42",status:"occupied",guest:"Sophie Laurent",checkout:"2026-02-12",score:94,cleaning:"done",inspection:"pending",maintenance:0},
+{id:"P2",name:"Studio Cedofeita",address:"Rua de Cedofeita 180",status:"occupied",guest:"Marco Rossi",checkout:"2026-02-10",score:99,cleaning:"done",inspection:"done",maintenance:0},
+{id:"P3",name:"Apt. Foz T3",address:"Av. do Brasil 322",status:"checkout_today",guest:"James Wilson",checkout:"2026-02-11",score:87,cleaning:"waiting",inspection:"waiting",maintenance:2},
+{id:"P4",name:"Casa Boavista T1",address:"Rua da Boavista 95",status:"vacant",guest:null,checkout:null,score:96,cleaning:"done",inspection:"done",maintenance:0},
+{id:"P5",name:"Loft Campanhã",address:"Rua do Heroísmo 44",status:"maintenance",guest:null,checkout:null,score:72,cleaning:"blocked",inspection:"blocked",maintenance:3},
+{id:"P6",name:"Apt. Aliados T2",address:"Praça dos Aliados 18",status:"occupied",guest:"Anna Müller",checkout:"2026-02-14",score:91,cleaning:"done",inspection:"done",maintenance:1},
+];
+const PSTAT={occupied:{color:"#22c55e",label:"Ocupado"},vacant:{color:"#3b82f6",label:"Livre"},checkout_today:{color:"#f59e0b",label:"Check-out hoje"},maintenance:{color:"#ef4444",label:"Manutenção"}};
 
-                <!-- Properties List -->
-                <div id="propertiesList" style="display: none;">
-                    <div style="background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--primary);">
-                                QR Codes Criados
-                            </h3>
-                            <button onclick="downloadAllQRCodes()" 
-                                    style="padding: 0.75rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
-                                📥 Baixar Todos
-                            </button>
-                        </div>
-                        <div id="qrCodesList" style="display: grid; gap: 1.5rem;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+const SCANS=[
+{id:"R1",property:"Apt. Ribeira T2",room:"Cozinha",date:"2026-02-08",inspector:"Ana Costa",changes:2,matchScore:88,status:"pending",severity:"medium",items:["Copo de vinho em falta","Risco na bancada"]},
+{id:"R2",property:"Apt. Foz T3",room:"Quarto principal",date:"2026-01-28",inspector:"Sofia Oliveira",changes:3,matchScore:78,status:"flagged",severity:"high",items:["Queimadura no colchão","Almofada em falta","Mancha no tapete"]},
+{id:"R3",property:"Loft Campanhã",room:"Sala",date:"2026-01-20",inspector:"Ana Costa",changes:4,matchScore:68,status:"flagged",severity:"high",items:["Buraco na parede","Humidade no tecto","Quadro em falta","Estante deslocada"]},
+{id:"R4",property:"Studio Cedofeita",room:"Quarto",date:"2026-02-06",inspector:"Sofia Oliveira",changes:0,matchScore:99,status:"ok",severity:"none",items:[]},
+{id:"R5",property:"Apt. Aliados T2",room:"Cozinha",date:"2026-02-07",inspector:"Ana Costa",changes:0,matchScore:98,status:"ok",severity:"none",items:[]},
+];
+const SCSTAT={ok:{color:"#22c55e",label:"OK"},pending:{color:"#f59e0b",label:"Pendente"},flagged:{color:"#ef4444",label:"Danos graves"}};
 
-    <!-- Notes Modal -->
-    <div class="modal" id="notesModal">
-        <div class="modal-content">
-            <h3 class="modal-title">Adicionar Observações</h3>
-            <textarea id="notesTextarea" class="notes-textarea" 
-                      placeholder="Descreva o que foi observado..."></textarea>
-            <div class="modal-buttons">
-                <button class="modal-btn cancel" onclick="closeNotesModal()">Cancelar</button>
-                <button class="modal-btn submit" onclick="submitWithNotes()">Submeter</button>
-            </div>
-        </div>
-    </div>
+const MAINTS=[
+{id:"M1",property:"Loft Campanhã",issue:"Buraco na parede — sala",priority:"high",status:"in_progress",assignee:"Miguel Santos",created:"2026-01-21",source:"DiffScan R3",sugCost:175,techEst:180,realCost:null,note:"Inclui material e pintura",quote:false},
+{id:"M2",property:"Loft Campanhã",issue:"Reparação humidade tecto",priority:"high",status:"waiting_parts",assignee:"Miguel Santos",created:"2026-01-22",source:"DiffScan R3",sugCost:400,techEst:450,realCost:null,note:"Orçamento da Hidrofix Lda.",quote:true},
+{id:"M3",property:"Loft Campanhã",issue:"Substituir quadro decorativo",priority:"low",status:"scheduled",assignee:"Miguel Santos",created:"2026-01-23",source:"DiffScan R3",sugCost:55,techEst:null,realCost:null,note:"",quote:false},
+{id:"M4",property:"Apt. Foz T3",issue:"Substituir colchão (queimadura)",priority:"high",status:"scheduled",assignee:"Miguel Santos",created:"2026-01-29",source:"DiffScan R2",sugCost:290,techEst:320,realCost:null,note:"Colchão casal viscoelástico",quote:false},
+{id:"M5",property:"Apt. Foz T3",issue:"Limpeza profunda tapete",priority:"medium",status:"completed",assignee:"Miguel Santos",created:"2026-01-30",source:"DiffScan R2",sugCost:70,techEst:80,realCost:75,note:"",quote:false},
+{id:"M6",property:"Apt. Aliados T2",issue:"Torneira WC a pingar",priority:"medium",status:"scheduled",assignee:"Miguel Santos",created:"2026-02-09",source:"Manual",sugCost:65,techEst:null,realCost:null,note:"",quote:false},
+];
+const MSTAT={scheduled:{color:"#3b82f6",label:"Agendada"},in_progress:{color:"#f59e0b",label:"Em curso"},waiting_parts:{color:"#8b5cf6",label:"Aguarda material"},completed:{color:"#22c55e",label:"Concluída"}};
+const MPRI={high:{color:"#ef4444",label:"Alta"},medium:{color:"#f59e0b",label:"Média"},low:{color:"#22c55e",label:"Baixa"}};
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-    <!-- Firebase Configuration and Initialization -->
-    <script>
-        console.log('🔥 Starting Firebase initialization...');
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyBOaj0avDETid4skr8nYVMQquIHWHhBUIfW",
-            authDomain: "saferent-gestao.firebaseapp.com",
-            databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "saferent-gestao",
-            storageBucket: "saferent-gestao.firebasestorage.app",
-            messagingSenderId: "275930621637",
-            appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
-        };
-        
-        // Global variables - declared here to be available everywhere
-        var database = null;
-        var firebaseInitialized = false;
-        var firebaseReady = false;
-        
-        // Initialize Firebase immediately
-        (function() {
-            try {
-                console.log('Initializing Firebase with config:', firebaseConfig);
-                firebase.initializeApp(firebaseConfig);
-                database = firebase.database();
-                firebaseInitialized = true;
-                
-                console.log('✅ Firebase initialized. Database object:', database);
-                
-                // Wait for connection
-                database.ref('.info/connected').on('value', function(snapshot) {
-                    firebaseReady = snapshot.val() === true;
-                    console.log('Firebase connection status:', firebaseReady ? 'CONNECTED' : 'DISCONNECTED');
-                });
-                
-            } catch (error) {
-                console.error('❌ Firebase initialization failed:', error);
-                alert('Erro ao inicializar Firebase: ' + error.message);
-            }
-        })();
-        
-        // Helper function to wait for Firebase
-        function waitForFirebase(callback, maxAttempts = 50) {
-            let attempts = 0;
-            const checkInterval = setInterval(function() {
-                attempts++;
-                if (database && firebaseInitialized) {
-                    clearInterval(checkInterval);
-                    console.log('✅ Firebase ready after', attempts, 'attempts');
-                    callback();
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(checkInterval);
-                    console.error('❌ Firebase not ready after', maxAttempts, 'attempts');
-                    alert('Firebase não conseguiu inicializar. Recarregue a página.');
-                }
-            }, 100);
-        }
-    </script>
-    
-    <!-- Main Application Script -->
-    <script>
-        let currentStatus = null;
-        let currentPropertyCode = null;
-        let qrProperties = []; // Store properties for QR generation
-        let isAuthenticated = false;
-        
-        // Simple authentication
-        const ADMIN_PASSWORD = 'SRcontrolo'; // MUDE ESTA PASSWORD!
-        
-        function checkAuth() {
-            const savedAuth = localStorage.getItem('isAuthenticated');
-            if (savedAuth === 'true') {
-                isAuthenticated = true;
-                return true;
-            }
-            return false;
-        }
-        
-        function promptPassword() {
-            const password = prompt('Introduza a password de administrador:');
-            if (password === ADMIN_PASSWORD) {
-                isAuthenticated = true;
-                localStorage.setItem('isAuthenticated', 'true');
-                return true;
-            } else {
-                alert('Password incorreta!');
-                return false;
-            }
-        }
-        
-        function logout() {
-            isAuthenticated = false;
-            localStorage.removeItem('isAuthenticated');
-            location.reload();
-        }
-        
-        // Get property code from URL parameter
-        function getPropertyFromURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('apt') || urlParams.get('apartamento') || urlParams.get('property');
-        }
-        
-        // Initialize on page load
-        function initializePage() {
-            const propertyCode = getPropertyFromURL();
-            
-            if (propertyCode) {
-                // If there's a property in URL, go directly to scanner screen
-                // This is for cleaning staff - no authentication needed
-                currentPropertyCode = propertyCode;
-                
-                // Hide navigation for cleaning staff
-                document.querySelector('.nav-buttons').style.display = 'none';
-                
-                // Only show scanner screen
-                showScreenDirect('scanner');
-                document.getElementById('scannedPropertyName').textContent = propertyCode;
-            } else {
-                // No property code - this is admin access
-                // Check authentication
-                if (!checkAuth()) {
-                    if (!promptPassword()) {
-                        // Password incorrect - show error and hide everything
-                        document.body.innerHTML = `
-                            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--primary); color: white; text-align: center; padding: 2rem;">
-                                <div>
-                                    <h1 style="font-family: 'Syne', sans-serif; font-size: 2rem; margin-bottom: 1rem;">Acesso Negado</h1>
-                                    <p>Password incorreta</p>
-                                    <button onclick="location.reload()" style="margin-top: 2rem; padding: 1rem 2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">
-                                        Tentar Novamente
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        return;
-                    }
-                }
-                
-                // Authenticated - add logout button
-                addLogoutButton();
-                
-                // Show dashboard by default
-                loadDashboard();
-            }
-        }
-        
-        function addLogoutButton() {
-            const navButtons = document.querySelector('.nav-buttons');
-            const logoutBtn = document.createElement('button');
-            logoutBtn.className = 'nav-btn';
-            logoutBtn.textContent = '🚪 Sair';
-            logoutBtn.onclick = logout;
-            logoutBtn.style.background = 'rgba(255, 59, 92, 0.2)';
-            navButtons.appendChild(logoutBtn);
-        }
-        
-        function showScreenDirect(screenName) {
-            // Direct show without authentication check
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenName).classList.add('active');
-        }
-        
-        // QR Code Generation Functions
-        function addProperty() {
-            console.log('addProperty called');
-            const propertyName = document.getElementById('newPropertyName').value.trim();
-            const baseURL = document.getElementById('baseURL').value.trim();
-            
-            console.log('Property name:', propertyName);
-            console.log('Base URL:', baseURL);
-            
-            if (!propertyName) {
-                alert('Por favor, insira o nome do apartamento');
-                return;
-            }
-            
-            if (!baseURL) {
-                alert('Por favor, insira o URL base da aplicação');
-                return;
-            }
-            
-            // Check for duplicates
-            if (qrProperties.includes(propertyName)) {
-                alert('Este apartamento já foi adicionado!');
-                return;
-            }
-            
-            // Add to list
-            qrProperties.push(propertyName);
-            console.log('Properties list:', qrProperties);
-            
-            // Clear input
-            document.getElementById('newPropertyName').value = '';
-            
-            // Update display
-            try {
-                updateQRCodesList();
-                console.log('List updated successfully');
-            } catch (error) {
-                console.error('Error updating list:', error);
-                alert('Erro ao atualizar lista: ' + error.message);
-            }
-        }
-        
-        function removeProperty(index) {
-            qrProperties.splice(index, 1);
-            updateQRCodesList();
-        }
-        
-        function updateQRCodesList() {
-            console.log('updateQRCodesList called');
-            try {
-                const listContainer = document.getElementById('propertiesList');
-                const qrCodesContainer = document.getElementById('qrCodesList');
-                const baseURL = document.getElementById('baseURL').value.trim();
-                
-                console.log('Containers found:', !!listContainer, !!qrCodesContainer);
-                console.log('Properties count:', qrProperties.length);
-                
-                if (qrProperties.length === 0) {
-                    listContainer.style.display = 'none';
-                    return;
-                }
-                
-                listContainer.style.display = 'block';
-                qrCodesContainer.innerHTML = '';
-                
-                qrProperties.forEach((propertyName, index) => {
-                    console.log('Creating card for:', propertyName, 'index:', index);
-                    const fullURL = `${baseURL}?apt=${encodeURIComponent(propertyName)}`;
-                    
-                    const card = document.createElement('div');
-                    card.style.cssText = 'background: var(--surface); border-radius: 16px; padding: 1.5rem; display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center;';
-                    
-                    // QR Code canvas
-                    const qrContainer = document.createElement('div');
-                    qrContainer.id = `qr-${index}`;
-                    qrContainer.style.cssText = 'background: white; padding: 0.75rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
-                    
-                    // Property info
-                    const info = document.createElement('div');
-                    info.innerHTML = `
-                        <div style="font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
-                            ${propertyName}
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--text-light); word-break: break-all;">
-                            ${fullURL}
-                        </div>
-                    `;
-                    
-                    // Action buttons
-                    const actions = document.createElement('div');
-                    actions.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
-                    
-                    const downloadBtn = document.createElement('button');
-                    downloadBtn.textContent = '📥 Baixar';
-                    downloadBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-green); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
-                    downloadBtn.onclick = function() { 
-                        console.log('Download clicked for:', propertyName);
-                        downloadSingleQR(index, propertyName); 
-                    };
-                    
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = '🗑 Remover';
-                    removeBtn.style.cssText = 'padding: 0.6rem 1.2rem; background: var(--accent-red); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 0.9rem;';
-                    removeBtn.onclick = function() { 
-                        console.log('Remove clicked for:', index);
-                        removeProperty(index); 
-                    };
-                    
-                    actions.appendChild(downloadBtn);
-                    actions.appendChild(removeBtn);
-                    
-                    card.appendChild(qrContainer);
-                    card.appendChild(info);
-                    card.appendChild(actions);
-                    qrCodesContainer.appendChild(card);
-                    
-                    // Generate QR code
-                    console.log('Generating QR for:', fullURL);
-                    qrContainer.innerHTML = ''; // Clear first
-                    try {
-                        new QRCode(qrContainer, {
-                            text: fullURL,
-                            width: 150,
-                            height: 150,
-                            colorDark: '#0A0E27',
-                            colorLight: '#FFFFFF',
-                            correctLevel: QRCode.CorrectLevel.H
-                        });
-                        console.log('QR generated successfully for:', propertyName);
-                    } catch (error) {
-                        console.error('Erro ao gerar QR:', error);
-                        qrContainer.innerHTML = '<div style="color: red; padding: 1rem;">Erro ao gerar QR</div>';
-                    }
-                });
-            } catch (error) {
-                console.error('Error in updateQRCodesList:', error);
-                alert('Erro ao atualizar lista: ' + error.message);
-            }
-        }
-        
-        function downloadSingleQR(index, propertyName) {
-            console.log('Download requested for:', propertyName);
-            const qrContainer = document.querySelector(`#qr-${index}`);
-            if (!qrContainer) {
-                console.error('QR container not found');
-                return;
-            }
-            
-            // Get the canvas or image from the QR code
-            const canvas = qrContainer.querySelector('canvas');
-            const img = qrContainer.querySelector('img');
-            
-            if (canvas) {
-                // If it's a canvas, download directly
-                const link = document.createElement('a');
-                link.download = `QR-${propertyName}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                console.log('Downloaded from canvas');
-            } else if (img) {
-                // If it's an image, download the image
-                const link = document.createElement('a');
-                link.download = `QR-${propertyName}.png`;
-                link.href = img.src;
-                link.click();
-                console.log('Downloaded from image');
-            } else {
-                console.error('No canvas or image found in QR container');
-                alert('Erro: QR code não encontrado');
-            }
-        }
-        
-        function downloadAllQRCodes() {
-            if (qrProperties.length === 0) return;
-            
-            const baseURL = document.getElementById('baseURL').value.trim();
-            let processed = 0;
-            
-            qrProperties.forEach((propertyName, index) => {
-                setTimeout(() => {
-                    downloadSingleQR(index, propertyName);
-                    processed++;
-                    
-                    if (processed === qrProperties.length) {
-                        alert(`✓ ${qrProperties.length} QR codes baixados com sucesso!`);
-                    }
-                }, index * 500); // Delay between downloads
-            });
-        }
-        
-        // Storage helper functions usando Firebase Realtime Database
-        async function saveProperty(propertyCode, status, notes = '') {
-            console.log('=== SAVE PROPERTY CALLED ===');
-            console.log('Property Code:', propertyCode);
-            console.log('Status:', status);
-            console.log('Notes:', notes);
-            console.log('Database object:', database);
-            
-            if (!database) {
-                const msg = '❌ Firebase não configurado! Configure primeiro.';
-                alert(msg);
-                console.error(msg);
-                return false;
-            }
-            
-            const property = {
-                code: propertyCode,
-                status: status,
-                notes: notes,
-                timestamp: new Date().toISOString()
-            };
-            
-            console.log('Property object to save:', property);
-            console.log('Path:', 'properties/' + propertyCode);
-            
-            try {
-                console.log('Attempting to write to Firebase...');
-                await database.ref('properties/' + propertyCode).set(property);
-                console.log('✅ Property saved to Firebase successfully!');
-                alert('✅ Dados guardados com sucesso!');
-                return true;
-            } catch (error) {
-                console.error('❌ Erro ao guardar no Firebase:', error);
-                console.error('Error code:', error.code);
-                console.error('Error message:', error.message);
-                
-                let errorMsg = 'Erro ao guardar: ' + error.message;
-                if (error.code === 'PERMISSION_DENIED') {
-                    errorMsg = '❌ PERMISSÃO NEGADA!\n\nVerifique as REGRAS do Firebase:\n1. Vá ao Firebase Console\n2. Realtime Database → Regras\n3. Certifique que ".write": true';
-                }
-                
-                alert(errorMsg);
-                return false;
-            }
-        }
-        
-        async function getAllProperties() {
-            if (!database) {
-                console.log('Firebase not configured, using empty data');
-                return [];
-            }
-            
-            try {
-                const snapshot = await database.ref('properties').once('value');
-                const data = snapshot.val();
-                
-                if (!data) {
-                    console.log('No properties found in Firebase');
-                    return [];
-                }
-                
-                // Convert object to array
-                const properties = Object.values(data);
-                console.log('Loaded properties from Firebase:', properties.length);
-                return properties;
-            } catch (error) {
-                console.error('Erro ao carregar do Firebase:', error);
-                return [];
-            }
-        }
-        
-        // Real-time listener for dashboard updates
-        function setupRealtimeListener() {
-            if (!database) return;
-            
-            database.ref('properties').on('value', (snapshot) => {
-                console.log('Firebase data updated, reloading dashboard');
-                if (document.getElementById('dashboard').classList.contains('active')) {
-                    loadDashboard();
-                }
-            });
-        }
-        
-        // Firebase Status Display
-        function updateFirebaseStatus() {
-            const statusDiv = document.getElementById('statusInfo');
-            if (!statusDiv) {
-                console.log('Status div not found');
-                return;
-            }
-            
-            console.log('Updating Firebase status... Database:', database, 'Initialized:', firebaseInitialized);
-            
-            if (!database || !firebaseInitialized) {
-                statusDiv.innerHTML = `
-                    <div style="padding: 1rem; background: #ffebee; border-left: 4px solid #f44336; border-radius: 8px;">
-                        <strong style="color: #c62828;">❌ Firebase NÃO Configurado</strong><br>
-                        <span style="font-size: 0.9rem; color: #666;">
-                            As credenciais do Firebase não estão no código ou há erro de inicialização.<br>
-                            Verifique o Console (F12) para mais detalhes.
-                        </span>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Show initial loading
-            statusDiv.innerHTML = `
-                <div style="padding: 1rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 8px;">
-                    <strong style="color: #1565c0;">🔄 Conectando ao Firebase...</strong><br>
-                    <span style="font-size: 0.9rem; color: #666;">
-                        Aguarde...
-                    </span>
-                </div>
-            `;
-            
-            // Test connection
-            database.ref('.info/connected').on('value', (snapshot) => {
-                console.log('Connection status changed:', snapshot.val());
-                
-                if (snapshot.val() === true) {
-                    // Test if we can read
-                    database.ref('properties').once('value').then((snap) => {
-                        const count = snap.numChildren();
-                        console.log('Successfully read from Firebase. Properties count:', count);
-                        
-                        statusDiv.innerHTML = `
-                            <div style="padding: 1rem; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 8px;">
-                                <strong style="color: #2e7d32;">✅ Firebase Conectado & Funcionando!</strong><br>
-                                <span style="font-size: 0.9rem; color: #666;">
-                                    Projeto: ${firebaseConfig.projectId}<br>
-                                    Apartamentos registados: ${count}
-                                </span>
-                            </div>
-                        `;
-                    }).catch((error) => {
-                        console.error('Error reading from Firebase:', error);
-                        
-                        statusDiv.innerHTML = `
-                            <div style="padding: 1rem; background: #ffebee; border-left: 4px solid #f44336; border-radius: 8px;">
-                                <strong style="color: #c62828;">❌ Erro ao ler dados do Firebase</strong><br>
-                                <span style="font-size: 0.9rem; color: #666;">
-                                    ${error.message}<br>
-                                    ${error.code === 'PERMISSION_DENIED' ? 'Verifique as REGRAS do Firebase!' : 'Verifique a configuração.'}
-                                </span>
-                            </div>
-                        `;
-                    });
-                } else {
-                    statusDiv.innerHTML = `
-                        <div style="padding: 1rem; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px;">
-                            <strong style="color: #e65100;">⚠️ Firebase Desconectado</strong><br>
-                            <span style="font-size: 0.9rem; color: #666;">
-                                Verifique a sua conexão à internet ou as configurações do Firebase
-                            </span>
-                        </div>
-                    `;
-                }
-            });
-        }
-        
-        // Screen navigation
-        function showScreen(screenName) {
-            // Check authentication for protected screens
-            if (!isAuthenticated && screenName !== 'scanner') {
-                alert('Acesso não autorizado');
-                return;
-            }
-            
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(screenName).classList.add('active');
-            
-            // Find and activate the correct button
-            const buttons = document.querySelectorAll('.nav-btn');
-            if (screenName === 'dashboard') {
-                buttons[0].classList.add('active');
-                loadDashboard();
-            } else if (screenName === 'scanner') {
-                buttons[1].classList.add('active');
-            } else if (screenName === 'generator') {
-                buttons[2].classList.add('active');
-            }
-        }
-        
-        // Submit status
-        async function submitStatus(status, notes = '') {
-            if (!currentPropertyCode) {
-                alert('Erro: Apartamento não identificado');
-                return;
-            }
-            
-            const success = await saveProperty(currentPropertyCode, status, notes);
-            
-            if (success) {
-                const successMsg = document.getElementById('successMessage');
-                successMsg.classList.add('show');
-                
-                // Disable buttons temporarily
-                document.querySelectorAll('.status-btn').forEach(btn => btn.disabled = true);
-                
-                setTimeout(() => {
-                    successMsg.classList.remove('show');
-                    document.querySelectorAll('.status-btn').forEach(btn => btn.disabled = false);
-                }, 2500);
-            } else {
-                alert('Erro ao guardar. Por favor, tente novamente.');
-            }
-        }
-        
-        // Notes modal
-        function openNotesModal(status) {
-            currentStatus = status;
-            document.getElementById('notesModal').classList.add('active');
-            document.getElementById('notesTextarea').value = '';
-            document.getElementById('notesTextarea').focus();
-        }
-        
-        function closeNotesModal() {
-            document.getElementById('notesModal').classList.remove('active');
-            currentStatus = null;
-        }
-        
-        function submitWithNotes() {
-            const notes = document.getElementById('notesTextarea').value.trim();
-            if (!notes) {
-                alert('Por favor, adicione observações');
-                return;
-            }
-            
-            submitStatus(currentStatus, notes);
-            closeNotesModal();
-        }
-        
-        // Dashboard
-        async function loadDashboard() {
-            // Show Firebase status
-            updateFirebaseStatus();
-            
-            const properties = await getAllProperties();
-            
-            // Update stats
-            const stats = {
-                green: properties.filter(p => p.status === 'green').length,
-                yellow: properties.filter(p => p.status === 'yellow').length,
-                red: properties.filter(p => p.status === 'red').length
-            };
-            
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card green">
-                    <div class="stat-number">${stats.green}</div>
-                    <div class="stat-label">Prontos</div>
-                </div>
-                <div class="stat-card yellow">
-                    <div class="stat-number">${stats.yellow}</div>
-                    <div class="stat-label">Com Observações</div>
-                </div>
-                <div class="stat-card red">
-                    <div class="stat-number">${stats.red}</div>
-                    <div class="stat-label">Não Habitáveis</div>
-                </div>
-            `;
-            
-            // Update properties grid
-            const grid = document.getElementById('propertiesGrid');
-            
-            if (properties.length === 0) {
-                grid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-light);">
-                        <p style="font-size: 1.2rem;">Nenhum apartamento reportado ainda</p>
-                        <p style="margin-top: 0.5rem;">Aguardando primeira limpeza...</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Sort by timestamp (most recent first)
-            properties.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            grid.innerHTML = properties.map(prop => {
-                const statusText = {
-                    green: 'Pronto e OK',
-                    yellow: 'Com Observações',
-                    red: 'Não Habitável'
-                };
-                
-                const time = new Date(prop.timestamp).toLocaleString('pt-PT', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                return `
-                    <div class="property-card status-${prop.status}">
-                        <div class="property-name">${prop.code}</div>
-                        <div class="property-status ${prop.status}">
-                            <span class="status-dot"></span>
-                            ${statusText[prop.status]}
-                        </div>
-                        ${prop.notes ? `
-                            <div class="property-notes">
-                                <strong>Observações:</strong><br>
-                                ${prop.notes}
-                            </div>
-                        ` : ''}
-                        <div class="property-time">
-                            Última atualização: ${time}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        // Initialize on page load - WAIT FOR FIREBASE
-        console.log('Waiting for Firebase before initializing page...');
-        waitForFirebase(function() {
-            console.log('Firebase ready! Initializing page...');
-            initializePage();
-            setupRealtimeListener();
-        });
-        
-        // Close modal when clicking outside
-        document.getElementById('notesModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeNotesModal();
-            }
-        });
-    </script>
+const SEM={green:{color:"#22c55e",label:"Pronto e OK",icon:"✓"},yellow:{color:"#f59e0b",label:"Com Observações",icon:"!"},red:{color:"#ef4444",label:"Não Habitável",icon:"⚠"}};
+
+/* ═══ MODULES NAV ═══ */
+const MODS=[
+{key:"overview",label:"Visão Geral",icon:"◐",color:"#06b6d4"},
+{key:"properties",label:"Propriedades",icon:"🏠",color:"#3b82f6"},
+{key:"diffscan",label:"DiffScan",icon:"🔍",color:"#8b5cf6",desc:"Inspeções"},
+{key:"cleancheck",label:"CleanCheck",icon:"🚦",color:"#22c55e",desc:"Limpeza"},
+{key:"maintenance",label:"Manutenção",icon:"🔧",color:"#f59e0b",desc:"Reparações"},
+{key:"team",label:"Equipa",icon:"👥",color:"#ec4899",desc:"Permissões"},
+];
+
+let curMod="overview",ccFilter="all",ccExpanded=null,mFilter="all",mExpanded=null,scFilter="all",qrItems=[];
+
+/* ═══ THEME ═══ */
+function getTheme(){return localStorage.getItem("ds-th")||"dark"}
+function setTheme(t){document.documentElement.setAttribute("data-theme",t==="light"?"light":"");localStorage.setItem("ds-th",t);document.getElementById("thIc").textContent=t==="dark"?"☀":"☾";document.getElementById("thLb").textContent=t==="dark"?"Modo claro":"Modo escuro"}
+function toggleTheme(){setTheme(getTheme()==="dark"?"light":"dark")}
+
+/* ═══ HELPERS ═══ */
+function badge(c,l){return '<span class="bg" style="background:'+c+'15;color:'+c+';border:1px solid '+c+'30">'+l+'</span>'}
+function stat(l,v,c,ic,sub){return '<div class="stat"><div class="sl">'+l+'</div><div class="sv" style="color:'+c+'">'+v+'</div><div class="si">'+ic+'</div>'+(sub?'<div class="ss">'+sub+'</div>':'')+'</div>'}
+
+/* ═══ NAV ═══ */
+function buildNav(){
+  document.getElementById("navBtns").innerHTML=MODS.map(m=>'<button class="nb'+(curMod===m.key?" on":"")+'" onclick="nav(''+m.key+'')" style="'+(curMod===m.key?"background:"+m.color+"15":"")+'"><span class="ic">'+m.icon+'</span><span style="'+(curMod===m.key?"color:"+m.color:"")+'">'+ m.label+'</span>'+(m.desc?'<span class="desc">'+m.desc+'</span>':'')+'</button>').join("");
+}
+function nav(key){
+  curMod=key;buildNav();
+  document.querySelectorAll(".vw").forEach(v=>v.classList.remove("on"));
+  document.getElementById("v"+key.charAt(0).toUpperCase()+key.slice(1)).classList.add("on");
+  const m=MODS.find(x=>x.key===key);
+  document.getElementById("topTitle").textContent=(m?m.icon+" "+m.label:"");
+  render();
+}
+
+/* ═══ FIREBASE ═══ */
+async function fbGetAll(){if(!db)return[];try{const s=await db.ref("properties").once("value");return s.val()?Object.values(s.val()):[];}catch(e){return[]}}
+function fbListen(){if(!db)return;db.ref("properties").on("value",()=>{if(curMod==="cleancheck"||curMod==="overview")render()})}
+
+/* ═══ RENDER ═══ */
+async function render(){
+  if(curMod==="overview") await renderOverview();
+  else if(curMod==="properties") renderProperties();
+  else if(curMod==="diffscan") renderDiffScan();
+  else if(curMod==="cleancheck") await renderCleanCheck();
+  else if(curMod==="maintenance") renderMaintenance();
+  else if(curMod==="team") renderTeam();
+}
+
+/* ═══ OVERVIEW ═══ */
+async function renderOverview(){
+  const el=document.getElementById("vOverview");
+  const fb=await fbGetAll();
+  const h=new Date().getHours();
+  const greet=h<12?"Bom dia":h<19?"Boa tarde":"Boa noite";
+  const dateStr=new Date().toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const occ=PROPS.filter(p=>p.status==="occupied"||p.status==="checkout_today").length;
+  const co=PROPS.filter(p=>p.status==="checkout_today").length;
+  const openM=MAINTS.filter(m=>m.status!=="completed").length;
+  const flagged=SCANS.filter(r=>r.status==="flagged").length;
+  const pending=fb.filter(c=>!c.status||c.status==="pending").length;
+  const fbRed=fb.filter(c=>c.status==="red").length;
+  const avg=Math.round(PROPS.reduce((a,p)=>a+p.score,0)/PROPS.length);
+  const totalMaintCost=MAINTS.filter(m=>m.status!=="completed").reduce((a,m)=>a+(m.techEst||m.sugCost||0),0);
+
+  let alerts="";
+  if(co>0)alerts+='<div class="alrt" style="background:#f59e0b10;border:1px solid #f59e0b30" onclick="nav(\'properties\')"><span style="font-size:20px">◐</span><div><div style="font-size:13px;font-weight:600;color:var(--ylw)">'+co+' check-out'+(co>1?'s':'')+' hoje</div><div style="font-size:11px;color:var(--txF)">Limpeza e inspeção necessárias</div></div></div>';
+  if(flagged>0)alerts+='<div class="alrt" style="background:#ef444410;border:1px solid #ef444430" onclick="nav(\'diffscan\')"><span style="font-size:20px">⚠</span><div><div style="font-size:13px;font-weight:600;color:var(--red)">'+flagged+' danos graves por resolver</div><div style="font-size:11px;color:var(--txF)">Requer ação imediata</div></div></div>';
+  if(fbRed>0)alerts+='<div class="alrt" style="background:#ef444410;border:1px solid #ef444430" onclick="nav(\'cleancheck\')"><span style="font-size:20px">🚦</span><div><div style="font-size:13px;font-weight:600;color:var(--red)">'+fbRed+' alerta'+(fbRed>1?'s':'')+' CleanCheck</div><div style="font-size:11px;color:var(--txF)">Apartamentos não habitáveis</div></div></div>';
+
+  el.innerHTML='<h1 style="font-family:var(--head);font-size:26px;font-weight:700;margin:0 0 4px;letter-spacing:-.5px">'+greet+', João 👋</h1><p style="font-size:14px;color:var(--txF);margin:0 0 24px">'+dateStr+'</p>'
+  +(alerts?'<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">'+alerts+'</div>':"")
+  +'<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:28px">'
+  +stat("Propriedades",PROPS.length,"#3b82f6","🏠")
+  +stat("Ocupadas",occ,"#22c55e","●")
+  +stat("Score médio",avg,avg>=90?"#22c55e":"#f59e0b","◐")
+  +stat("CleanCheck",fb.length,"#22c55e","🚦")
+  +stat("Danos graves",flagged,flagged>0?"#ef4444":"#22c55e","🔍")
+  +stat("Manutenções",openM,"#f59e0b","🔧")
+  +'</div>'
+  +'<div class="sect">Módulos</div>'
+  +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px">'
+  +[{key:"diffscan",icon:"🔍",title:"DiffScan",sub:"Inspeções fotográficas",st:(SCANS.filter(r=>r.status==="pending"||r.status==="flagged").length)+" pendentes",color:"#8b5cf6"},
+    {key:"cleancheck",icon:"🚦",title:"CleanCheck",sub:"Semáforos de limpeza",st:fbRed+" alertas · "+fb.filter(c=>c.status==="green").length+" OK",color:"#22c55e"},
+    {key:"maintenance",icon:"🔧",title:"Manutenção",sub:"Ordens de reparação",st:openM+" abertas · "+totalMaintCost+"€ est.",color:"#f59e0b"},
+  ].map(m=>'<div class="mcard" onclick="nav(''+m.key+'')" onmouseover="this.style.borderColor=''+m.color+'50'" onmouseout="this.style.borderColor='var(--bd)'"><div style="font-size:28px;margin-bottom:10px">'+m.icon+'</div><div style="font-size:16px;font-weight:600;margin-bottom:2px">'+m.title+'</div><div style="font-size:12px;color:var(--txM);margin-bottom:10px">'+m.sub+'</div><div style="font-size:12px;font-family:var(--mono);color:'+m.color+';font-weight:600">'+m.st+'</div><div class="circle" style="background:'+m.color+'08"></div></div>').join("")
+  +'</div>'
+  +'<div class="sect">Pipeline de hoje</div>'
+  +'<div style="display:flex;flex-direction:column;gap:8px">'
+  +PROPS.filter(p=>p.status==="checkout_today"||p.status==="occupied").slice(0,4).map(p=>{
+    const ps=PSTAT[p.status];
+    return '<div class="cd cdc" onclick="nav('properties')"><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:12px"><div style="width:10px;height:10px;border-radius:50%;background:'+ps.color+'"></div><div><div style="font-size:14px;font-weight:600">'+p.name+'</div><div style="font-size:11px;color:var(--txM)">'+(p.guest||"—")+" · Check-out: "+(p.checkout||"—")+'</div></div></div><div style="display:flex;gap:6px">'
+    +badge(p.cleaning==="done"?"#22c55e":p.cleaning==="waiting"?"#f59e0b":"#ef4444","🧹 "+(p.cleaning==="done"?"OK":p.cleaning==="waiting"?"Espera":"Bloqueado"))
+    +badge(p.inspection==="done"?"#22c55e":p.inspection==="waiting"?"#f59e0b":"#3b82f6","🔍 "+(p.inspection==="done"?"OK":p.inspection==="waiting"?"Espera":"Pendente"))
+    +(p.maintenance>0?badge("#ef4444","🔧 "+p.maintenance):"")
+    +'</div></div></div>';
+  }).join("")+'</div>';
+}
+
+/* ═══ PROPERTIES ═══ */
+function renderProperties(){
+  document.getElementById("vProperties").innerHTML='<h2 style="font-family:var(--head);font-size:22px;font-weight:700;margin:0 0 20px;letter-spacing:-.5px">Propriedades</h2><div style="display:flex;flex-direction:column;gap:8px">'
+  +PROPS.map(p=>{
+    const ps=PSTAT[p.status];const sc=p.score>=95?"#22c55e":p.score>=85?"#f59e0b":"#ef4444";
+    return '<div class="cd"><div style="display:flex;align-items:center;gap:16px"><div style="width:44px;height:44px;border-radius:50%;border:3px solid '+sc+';display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;font-family:var(--mono);color:'+sc+';flex-shrink:0">'+p.score+'</div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="font-size:15px;font-weight:600">'+p.name+'</span>'+badge(ps.color,ps.label)+'</div><div style="font-size:12px;color:var(--txM)">'+p.address+'</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">'
+    +badge(p.cleaning==="done"?"#22c55e":p.cleaning==="blocked"?"#64748b":"#f59e0b","🧹 "+(p.cleaning==="done"?"Limpo":p.cleaning==="blocked"?"Bloqueado":"Pendente"))
+    +badge(p.inspection==="done"?"#22c55e":p.inspection==="blocked"?"#64748b":"#f59e0b","🔍 "+(p.inspection==="done"?"OK":p.inspection==="blocked"?"Bloqueado":"Pendente"))
+    +(p.maintenance>0?badge("#ef4444","🔧 "+p.maintenance+" ordens"):"")
+    +'</div></div></div>';
+  }).join("")+'</div>';
+}
+
+/* ═══ DIFFSCAN ═══ */
+function renderDiffScan(){
+  const f=scFilter==="all"?SCANS:SCANS.filter(r=>r.status===scFilter);
+  document.getElementById("vDiffscan").innerHTML='<h2 style="font-family:var(--head);font-size:22px;font-weight:700;margin:0 0 20px;letter-spacing:-.5px">🔍 DiffScan — Inspeções</h2>'
+  +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px">'
+  +stat("Total",SCANS.length,"#8b5cf6","📋")+stat("OK",SCANS.filter(r=>r.status==="ok").length,"#22c55e","✓")+stat("Pendentes",SCANS.filter(r=>r.status==="pending").length,"#f59e0b","●")+stat("Danos graves",SCANS.filter(r=>r.status==="flagged").length,"#ef4444","⚠")
+  +'</div><div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">'
+  +[{k:"all",l:"Todos"},{k:"flagged",l:"Danos graves"},{k:"pending",l:"Pendentes"},{k:"ok",l:"OK"}].map(x=>'<button class="fb'+(scFilter===x.k?" on":"")+'" onclick="scFilter=''+x.k+'';renderDiffScan()" style="'+(scFilter===x.k?"background:var(--bgTab);color:var(--tx);border-color:var(--bdH)":"")+'">'+x.l+'</button>').join("")
+  +'</div><div style="display:flex;flex-direction:column;gap:8px">'
+  +f.map(r=>{
+    const sc=SCSTAT[r.status]||{color:"#64748b",label:"—"};
+    return '<div class="cd"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:'+sc.color+';display:inline-block"></span><span style="font-size:14px;font-weight:600">'+r.property+'</span>'+badge(sc.color,sc.label)+'</div><span style="font-size:11px;color:var(--txG);font-family:var(--mono)">'+r.id+'</span></div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:12px;color:var(--txM);font-family:var(--mono)">'+r.room+' · '+r.inspector+' · '+r.date+'</div><div style="display:flex;gap:10px;font-size:11px;font-family:var(--mono)"><span style="color:var(--txF)">Match: '+r.matchScore+'%</span>'+(r.changes>0?'<span style="color:'+(r.severity==="high"?"#ef4444":"#f59e0b")+'">'+r.changes+' alterações</span>':'')+'</div></div>'
+    +(r.items.length>0?'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+r.items.map(it=>'<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ef444412;color:#ef4444;font-family:var(--mono)">'+it+'</span>').join("")+'</div>':'')
+    +'</div>';
+  }).join("")+'</div>';
+}
+
+/* ═══ CLEANCHECK (Firebase real) ═══ */
+async function renderCleanCheck(){
+  const all=await fbGetAll();
+  const g=all.filter(p=>p.status==="green").length,y=all.filter(p=>p.status==="yellow").length,r=all.filter(p=>p.status==="red").length;
+  const filtered=ccFilter==="all"?all:all.filter(p=>p.status===ccFilter);
+  filtered.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+
+  let html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="font-family:var(--head);font-size:22px;font-weight:700;letter-spacing:-.5px">🚦 CleanCheck</h2><div style="display:flex;gap:8px"><button onclick="exportCSV()" style="padding:8px 16px;border-radius:8px;border:none;background:var(--bgTab);color:var(--tx);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)">📊 Exportar</button><button onclick="showQRGen()" style="padding:8px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)">⊞ QR Codes</button></div></div>';
+
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px">'
+  +stat("Pronto e OK",g,"#22c55e","✓")+stat("Com observações",y,"#f59e0b","!")+stat("ALERTA!",r,r>0?"#ef4444":"#22c55e","⚠")+stat("Total",all.length,"#3b82f6","◐")+'</div>';
+
+  html+='<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">'
+  +[{k:"all",l:"Todos",c:null},{k:"red",l:"⚠ ALERTA!",c:"#ef4444"},{k:"yellow",l:"Com observações",c:"#f59e0b"},{k:"green",l:"Pronto e OK",c:"#22c55e"}].map(f=>{
+    const on=ccFilter===f.k;
+    return '<button class="fb'+(on?" on":"")+'" onclick="ccFilter=''+f.k+'';renderCleanCheck()" style="'+(on?"background:"+(f.c||"#3b82f6")+"18;color:"+(f.c||"#3b82f6")+";border-color:"+(f.c||"#3b82f6")+"40":"")+'">'+f.l+'</button>';
+  }).join("")+'</div>';
+
+  // QR Gen panel (hidden by default)
+  html+='<div id="qrPanel" style="display:none;margin-bottom:20px"></div>';
+
+  html+='<div style="display:flex;flex-direction:column;gap:8px">';
+  if(!filtered.length) html+='<div style="text-align:center;padding:40px;color:var(--txM)">Sem registos.</div>';
+  filtered.forEach(p=>{
+    const s=SEM[p.status]||{color:"#64748b",label:"—",icon:"○"};
+    const time=new Date(p.timestamp).toLocaleString("pt-PT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    const bc=p.status==="red"?"#ef444430":p.status==="yellow"?"#f59e0b20":"var(--bd)";
+    html+='<div class="cd" style="border-color:'+bc+'"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:'+(p.notes?"10px":"0")+'"><div style="display:flex;align-items:center;gap:10px"><div style="width:14px;height:14px;border-radius:50%;background:'+s.color+';box-shadow:0 0 8px '+s.color+'50;flex-shrink:0"></div><span style="font-size:16px;font-weight:600">'+p.code+'</span>'+badge(s.color,s.icon+" "+s.label)+'</div><span style="font-size:11px;color:var(--txF);font-family:var(--mono)">'+time+'</span></div>';
+    if(p.notes){
+      html+='<div style="background:'+(p.status==="red"?"rgba(239,68,68,.04)":"rgba(245,158,11,.04)")+';border:1px solid '+(p.status==="red"?"rgba(239,68,68,.12)":"rgba(245,158,11,.1)")+';border-left:3px solid '+s.color+'60;border-radius:10px;padding:10px 14px"><div style="font-size:10px;font-weight:600;color:'+s.color+';font-family:var(--mono);margin-bottom:4px">'+(p.status==="red"?"⚠ OBSERVAÇÕES (ALERTA)":"● OBSERVAÇÕES")+'</div><div style="font-size:13px;line-height:1.5">'+p.notes+'</div></div>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById("vCleancheck").innerHTML=html;
+}
+
+function showQRGen(){
+  const p=document.getElementById("qrPanel");
+  if(p.style.display==="none"){p.style.display="block";renderQRPanel()}
+  else p.style.display="none";
+}
+function renderQRPanel(){
+  const el=document.getElementById("qrPanel");
+  let h='<div class="cd" style="margin-bottom:12px"><div style="font-size:14px;font-weight:600;margin-bottom:12px">Gerar QR Codes</div><div style="margin-bottom:14px"><label style="display:block;font-size:11px;font-weight:600;color:var(--txS);margin-bottom:5px;font-family:var(--mono)">URL BASE</label><input id="qrBase" class="inp" value="https://trigueiros-cunha.github.io/Saferent-HM/cleancheck.html"><div style="font-size:10px;color:var(--txG);margin-top:4px">O QR abrirá: URL?apt=NomeDoApartamento</div></div><div style="display:flex;gap:10px"><input id="qrName" class="inp" placeholder="Nome do apartamento (ex: APT-101)" onkeydown="if(event.key==='Enter')addQR()" style="flex:1"><button onclick="addQR()" style="padding:10px 20px;border-radius:10px;border:none;background:#22c55e;color:#0f172a;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--head);white-space:nowrap">+ Adicionar</button></div></div>';
+  if(qrItems.length){
+    h+='<div class="cd"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:14px;font-weight:600">'+qrItems.length+' QR Code'+(qrItems.length>1?"s":"")+'</span><button onclick="dlAllQR()" style="padding:7px 14px;border-radius:8px;border:none;background:var(--bgTab);color:var(--tx);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--mono)">📥 Download todos</button></div><div id="qrCards"></div></div>';
+  }
+  el.innerHTML=h;
+  if(qrItems.length){
+    const cc=document.getElementById("qrCards");
+    qrItems.forEach((q,i)=>{
+      const card=document.createElement("div");card.style.cssText="display:flex;align-items:center;gap:16px;padding:12px 0;"+(i<qrItems.length-1?"border-bottom:1px solid var(--bdL)":"");
+      const qb=document.createElement("div");qb.id="qrc-"+i;qb.style.cssText="background:#fff;padding:6px;border-radius:8px;flex-shrink:0";
+      const info=document.createElement("div");info.style.cssText="flex:1;overflow:hidden";info.innerHTML='<div style="font-size:15px;font-weight:700;margin-bottom:3px">'+q.name+'</div><div style="font-size:10px;color:var(--txG);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+q.url+'</div>';
+      const acts=document.createElement("div");acts.style.cssText="display:flex;flex-direction:column;gap:6px;flex-shrink:0";
+      acts.innerHTML='<button onclick="dlQR('+i+',\''+q.name.replace(/'/g,"\\'")+'\',event)" style="padding:6px 14px;border-radius:8px;border:none;background:#22c55e;color:#0f172a;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--mono)">📥 Download</button><button onclick="rmQR('+i+',event)" style="padding:6px 14px;border-radius:8px;border:1px solid var(--bdL);background:transparent;color:var(--txM);font-size:11px;cursor:pointer;font-family:var(--mono)">✕ Remover</button>';
+      card.appendChild(qb);card.appendChild(info);card.appendChild(acts);cc.appendChild(card);
+      try{new QRCode(qb,{text:q.url,width:100,height:100,colorDark:"#0f172a",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H})}catch(e){}
+    });
+  }
+}
+function addQR(){
+  const n=document.getElementById("qrName").value.trim(),b=document.getElementById("qrBase").value.trim();
+  if(!n){alert("Insira o nome");return}if(!b){alert("Insira o URL");return}
+  if(qrItems.find(q=>q.name===n)){alert("Já existe");return}
+  qrItems.push({name:n,url:b+"?apt="+encodeURIComponent(n)});
+  document.getElementById("qrName").value="";renderQRPanel();
+}
+function rmQR(i,e){e&&e.stopPropagation();qrItems.splice(i,1);renderQRPanel()}
+function dlQR(i,name,e){e&&e.stopPropagation();const el=document.querySelector("#qrc-"+i);if(!el)return;const cv=el.querySelector("canvas"),im=el.querySelector("img");const a=document.createElement("a");a.download="QR-"+name+".png";if(cv)a.href=cv.toDataURL("image/png");else if(im)a.href=im.src;else return;a.click()}
+function dlAllQR(){qrItems.forEach((q,i)=>setTimeout(()=>dlQR(i,q.name),i*400))}
+
+/* ═══ EXPORT ═══ */
+async function exportCSV(){
+  const all=await fbGetAll();if(!all.length){alert("Sem dados");return}
+  all.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  let csv="\uFEFFData,Hora,Apartamento,Estado,Observações\n";
+  all.forEach(p=>{const d=new Date(p.timestamp);csv+=d.toLocaleDateString("pt-PT")+","+d.toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"})+","+p.code+","+(SEM[p.status]?SEM[p.status].label:p.status)+",\""+((p.notes||"").replace(/"/g,'""'))+"\"\n"});
+  const a=document.createElement("a");a.download="CleanCheck_"+new Date().toISOString().split("T")[0]+".csv";a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));a.click();
+}
+
+/* ═══ MAINTENANCE ═══ */
+function renderMaintenance(){
+  const f=mFilter==="all"?MAINTS:MAINTS.filter(m=>m.status===mFilter);
+  const open=MAINTS.filter(m=>m.status!=="completed"),done=MAINTS.filter(m=>m.status==="completed");
+  const tEst=open.reduce((a,m)=>a+(m.techEst||m.sugCost||0),0);
+  const tReal=done.reduce((a,m)=>a+(m.realCost||0),0);
+  const tEstD=done.reduce((a,m)=>a+(m.techEst||m.sugCost||0),0);
+  const vari=tEstD>0?Math.round(((tReal-tEstD)/tEstD)*100):0;
+
+  let html='<h2 style="font-family:var(--head);font-size:22px;font-weight:700;margin:0 0 20px;letter-spacing:-.5px">🔧 Manutenção</h2>';
+  html+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px">'
+  +stat("Abertas",open.length,"#f59e0b","📋")+stat("Concluídas",done.length,"#22c55e","✓")+stat("Custo est.",tEst+"€","#3b82f6","💰")+stat("Custo real",tReal+"€","#22c55e","✓")+stat("Variação",(vari>0?"+":"")+vari+"%",Math.abs(vari)<=10?"#22c55e":"#f59e0b","📊")+'</div>';
+
+  html+='<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">'
+  +[{k:"all",l:"Todas"},{k:"scheduled",l:"Agendadas",c:"#3b82f6"},{k:"in_progress",l:"Em curso",c:"#f59e0b"},{k:"waiting_parts",l:"Aguarda material",c:"#8b5cf6"},{k:"completed",l:"Concluídas",c:"#22c55e"}].map(x=>{
+    const on=mFilter===x.k;
+    return '<button class="fb'+(on?" on":"")+'" onclick="mFilter=''+x.k+'';renderMaintenance()" style="'+(on?"background:"+(x.c||"#3b82f6")+"18;color:"+(x.c||"#3b82f6")+";border-color:"+(x.c||"#3b82f6")+"40":"")+'">'+x.l+'</button>';
+  }).join("")+'</div>';
+
+  html+='<div style="display:flex;flex-direction:column;gap:8px">';
+  f.forEach(m=>{
+    const ms=MSTAT[m.status],mp=MPRI[m.priority];
+    const cost=m.techEst||m.sugCost||0;
+    const costDiff=m.realCost&&m.techEst?m.realCost-m.techEst:null;
+    html+='<div class="cd" style="cursor:pointer" onclick="mExpanded=mExpanded===''+m.id+''?null:''+m.id+'';renderMaintenance()"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="flex:1"><div style="font-size:15px;font-weight:600;margin-bottom:6px">'+m.issue+'</div><div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">'+badge(ms.color,ms.label)+badge(mp.color,mp.label)+(m.quote?badge("#8b5cf6","📎 Orçamento"):"")+(m.techEst===null&&m.status!=="completed"?badge("#64748b","Aguarda estimativa"):"")+'</div><div style="font-size:11px;color:var(--txF);font-family:var(--mono)">'+m.property+' · '+m.assignee+' · '+m.source+' · '+m.created+'</div></div><div style="text-align:right;flex-shrink:0;margin-left:16px">';
+    if(m.status==="completed"&&m.realCost){
+      html+='<div style="font-size:18px;font-weight:700;color:#22c55e;font-family:var(--mono)">'+m.realCost+'€</div><div style="font-size:10px;color:var(--txG)">custo real</div>';
+      if(costDiff!==null)html+='<div style="font-size:10px;font-family:var(--mono);color:'+(costDiff<=0?"#22c55e":"#ef4444")+'">'+(costDiff>0?"+":"")+costDiff+'€ vs est.</div>';
+    }else{
+      html+='<div style="font-size:18px;font-weight:700;color:'+(m.techEst?"var(--txS)":"var(--txG)")+';font-family:var(--mono)">'+cost+'€</div><div style="font-size:10px;color:var(--txG)">'+(m.techEst?"est. técnico":"sugestão hist.")+'</div>';
+    }
+    html+='</div></div>';
+    if(mExpanded===m.id){
+      html+='<div style="border-top:1px solid var(--bd);margin-top:12px;padding-top:12px"><div style="display:flex;gap:8px;flex-wrap:wrap">';
+      html+='<div style="flex:1;min-width:150px;background:var(--bgM);border:1px solid var(--bdL);border-radius:10px;padding:12px 14px"><div style="font-size:10px;color:var(--txG);font-family:var(--mono);margin-bottom:6px">① SUGESTÃO HISTÓRICO</div><div style="font-size:20px;font-weight:700;color:#3b82f6;font-family:var(--mono)">'+m.sugCost+'€</div></div>';
+      html+='<div style="flex:1;min-width:150px;background:var(--bgM);border:1px solid '+(m.techEst?"#f59e0b20":"var(--bdL)")+';border-radius:10px;padding:12px 14px"><div style="font-size:10px;color:var(--txG);font-family:var(--mono);margin-bottom:6px">② ESTIMATIVA TÉCNICO</div>'+(m.techEst?'<div style="font-size:20px;font-weight:700;color:#f59e0b;font-family:var(--mono)">'+m.techEst+'€</div>'+(m.note?'<div style="font-size:11px;color:var(--txM);margin-top:4px;font-style:italic">"'+m.note+'"</div>':''):'<div style="font-size:14px;color:var(--txG);font-style:italic">Aguarda avaliação</div>')+'</div>';
+      html+='<div style="flex:1;min-width:150px;background:var(--bgM);border:1px solid '+(m.realCost?"#22c55e20":"var(--bdL)")+';border-radius:10px;padding:12px 14px"><div style="font-size:10px;color:var(--txG);font-family:var(--mono);margin-bottom:6px">③ CUSTO REAL</div>'+(m.realCost?'<div style="font-size:20px;font-weight:700;color:#22c55e;font-family:var(--mono)">'+m.realCost+'€</div>'+(costDiff!==null?'<div style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:4px;background:'+(costDiff<=0?"#22c55e12":"#ef444412")+';color:'+(costDiff<=0?"#22c55e":"#ef4444")+'">'+(costDiff>0?"▲":"▼")+" "+(costDiff>0?"+":"")+costDiff+'€</div>':''):'<div style="font-size:14px;color:var(--txG);font-style:italic">'+(m.status==="completed"?"Por registar":"Após conclusão")+'</div>')+'</div>';
+      html+='</div></div>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById("vMaintenance").innerHTML=html;
+}
+
+/* ═══ TEAM ═══ */
+function renderTeam(){
+  document.getElementById("vTeam").innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><h2 style="font-family:var(--head);font-size:22px;font-weight:700;margin:0;letter-spacing:-.5px">👥 Equipa & Permissões</h2><button style="padding:8px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)">+ Adicionar membro</button></div><div style="display:flex;flex-direction:column;gap:8px">'
+  +USERS.map(u=>{
+    const r=ROLES[u.role];
+    return '<div class="cd"><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:14px"><div style="width:42px;height:42px;border-radius:50%;background:'+r.color+'15;border:2px solid '+r.color+'30;display:flex;align-items:center;justify-content:center;font-size:18px">'+u.avatar+'</div><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><span style="font-size:14px;font-weight:600">'+u.name+'</span>'+badge(r.color,r.icon+" "+r.label)+'</div><div style="font-size:11px;color:var(--txF);font-family:var(--mono)">'+u.email+'</div></div></div><div style="text-align:right"><div style="font-size:11px;color:var(--txM);margin-bottom:2px">Acesso:</div><div style="font-size:12px;font-weight:600;color:'+r.color+'">'+r.access+'</div></div></div></div>';
+  }).join("")+'</div>';
+}
+
+/* ═══ INIT ═══ */
+setTheme(getTheme());
+buildNav();
+render();
+fbListen();
+</script>
 </body>
 </html>

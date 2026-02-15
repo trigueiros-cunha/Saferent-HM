@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CleanCheck</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:#f7f8fb;color:#0f172a;min-height:100dvh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent}
+        .header{padding:20px 20px 16px;border-bottom:1px solid #e2e8f0;background:#fff}
+        .brand{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+        .brand-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#3b82f6,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+        .brand-name{font-family:'Syne';font-size:15px;font-weight:700;letter-spacing:-.02em}
+        .brand-tag{font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:#22c55e;font-weight:600}
+        .apt-name{font-family:'Syne';font-size:22px;font-weight:800;color:#0f172a}
+        .content{flex:1;padding:24px 20px;display:flex;flex-direction:column}
+
+        /* BUTTONS */
+        .sem-buttons{flex:1;display:flex;flex-direction:column;gap:12px}
+        .sem-btn{flex:1;min-height:100px;border-radius:16px;border:3px solid;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-family:'Syne';font-size:18px;font-weight:700;transition:all .15s;-webkit-appearance:none;position:relative;overflow:hidden}
+        .sem-btn:active{transform:scale(.96)}
+        .sem-btn.green{border-color:#22c55e;color:#22c55e;background:#fff}
+        .sem-btn.yellow{border-color:#f59e0b;color:#f59e0b;background:#fff}
+        .sem-btn.red{border-color:#ef4444;color:#ef4444;background:#fff}
+        .sem-btn .icon{font-size:36px}
+        .sem-btn .sub{font-size:11px;font-weight:500;opacity:.7}
+        .sem-btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+
+        /* OBS SCREEN */
+        .obs-screen{flex:1;display:flex;flex-direction:column}
+        .obs-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+        .obs-dot{width:16px;height:16px;border-radius:50%}
+        .obs-label{font-family:'Syne';font-size:16px;font-weight:700}
+        .obs-desc{font-size:13px;color:#64748b;margin-bottom:12px}
+        .obs-textarea{flex:1;min-height:140px;padding:16px;border-radius:14px;border:2px solid;font-family:'DM Sans';font-size:16px;color:#0f172a;outline:none;resize:none;line-height:1.5;background:#fff}
+        .obs-textarea::placeholder{color:#94a3b8}
+        .obs-actions{display:flex;gap:10px;margin-top:16px}
+        .btn-back{flex:1;padding:14px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans'}
+        .btn-send{flex:2;padding:14px;border-radius:12px;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne'}
+        .btn-send:disabled{opacity:.4;cursor:not-allowed}
+
+        /* DONE SCREEN */
+        .done-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+        .done-circle{width:80px;height:80px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px}
+        .done-title{font-family:'Syne';font-size:22px;font-weight:800;margin-bottom:6px}
+        .done-sub{font-size:13px;color:#64748b}
+        .done-close{font-size:12px;color:#94a3b8;margin-top:20px}
+
+        /* ERROR */
+        .error-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
+        .error-icon{font-size:48px;margin-bottom:16px;opacity:.3}
+        .error-title{font-family:'Syne';font-size:20px;font-weight:800;margin-bottom:8px}
+        .error-desc{font-size:14px;color:#64748b;max-width:300px}
+
+        /* HIDE SCREENS */
+        .hidden{display:none!important}
+
+        /* LOADING */
+        .loading{font-size:13px;color:#64748b;text-align:center;padding:40px}
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="brand">
+            <div class="brand-icon">◐</div>
+            <span class="brand-name">DiffSpace</span>
+            <span class="brand-tag">CleanCheck</span>
+        </div>
+        <div class="apt-name" id="aptName">A carregar...</div>
+    </div>
+
+    <div class="content">
+        <!-- LOADING -->
+        <div id="loadingScreen" class="loading">A ligar ao servidor...</div>
+
+        <!-- ERROR: no apt param -->
+        <div id="errorScreen" class="error-screen hidden">
+            <div class="error-icon">⊘</div>
+            <div class="error-title">Apartamento não identificado</div>
+            <div class="error-desc">Esta página deve ser aberta através do QR code do apartamento.</div>
+        </div>
+
+        <!-- STEP 1: Semaphore buttons -->
+        <div id="buttonsScreen" class="sem-buttons hidden">
+            <button class="sem-btn green" onclick="choose('green')">
+                <span class="icon">✓</span>
+                <span>Pronto e OK</span>
+                <span class="sub">Tudo limpo e pronto</span>
+            </button>
+            <button class="sem-btn yellow" onclick="choose('yellow')">
+                <span class="icon">!</span>
+                <span>Com observações</span>
+                <span class="sub">Faltas ou incidências pequenas</span>
+            </button>
+            <button class="sem-btn red" onclick="choose('red')">
+                <span class="icon">⚠</span>
+                <span>ALERTA!</span>
+                <span class="sub">Incidência grave</span>
+            </button>
+        </div>
+
+        <!-- STEP 2: Observations -->
+        <div id="obsScreen" class="obs-screen hidden">
+            <div class="obs-header">
+                <div class="obs-dot" id="obsDot"></div>
+                <div class="obs-label" id="obsLabel"></div>
+            </div>
+            <div class="obs-desc" id="obsDesc"></div>
+            <textarea class="obs-textarea" id="obsText" placeholder="Descreve o que encontraste..."></textarea>
+            <div class="obs-actions">
+                <button class="btn-back" onclick="backToButtons()">← Voltar</button>
+                <button class="btn-send" id="btnSend" onclick="send()" disabled>Enviar</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Done -->
+        <div id="doneScreen" class="done-screen hidden">
+            <div class="done-circle" id="doneCircle"></div>
+            <div class="done-title">Registado!</div>
+            <div class="done-sub" id="doneSub"></div>
+            <div class="done-close">Pode fechar esta página.</div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        // ═══ FIREBASE — mesma config que o property-manager.html ═══
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOaj0avDETid4skr8nYVMQquIHWHhBUIfW",
+            authDomain: "saferent-gestao.firebaseapp.com",
+            databaseURL: "https://saferent-gestao-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "saferent-gestao",
+            storageBucket: "saferent-gestao.firebasestorage.app",
+            messagingSenderId: "275930621637",
+            appId: "1:275930621637:web:868f72cd38e96b7b62f2ac"
+        };
+        var database = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+        } catch(e) { console.error(e); }
+
+        // ═══ STATE ═══
+        let aptCode = null;
+        let selectedStatus = null;
+        const STATUS = {
+            green: { color: '#22c55e', label: 'Pronto e OK' },
+            yellow: { color: '#f59e0b', label: 'Com Observações' },
+            red: { color: '#ef4444', label: 'Não Habitável' }
+        };
+
+        // ═══ INIT ═══
+        (function init() {
+            const params = new URLSearchParams(window.location.search);
+            aptCode = params.get('apt') || params.get('apartamento') || params.get('property');
+
+            if (!aptCode) {
+                show('errorScreen');
+                document.getElementById('aptName').textContent = '—';
+                return;
+            }
+
+            document.getElementById('aptName').textContent = aptCode;
+            // Wait for Firebase
+            let tries = 0;
+            const check = setInterval(() => {
+                tries++;
+                if (database) { clearInterval(check); show('buttonsScreen'); }
+                else if (tries > 30) { clearInterval(check); show('buttonsScreen'); } // show anyway, will error on save
+            }, 100);
+        })();
+
+        // ═══ NAVIGATION ═══
+        function show(id) {
+            ['loadingScreen','errorScreen','buttonsScreen','obsScreen','doneScreen'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // ═══ CHOOSE STATUS ═══
+        function choose(status) {
+            selectedStatus = status;
+            if (status === 'green') {
+                // Green = submit immediately, no observations needed
+                save(status, '');
+            } else {
+                // Yellow/Red = ask for observations
+                const s = STATUS[status];
+                document.getElementById('obsDot').style.background = s.color;
+                document.getElementById('obsDot').style.boxShadow = '0 0 10px ' + s.color + '50';
+                document.getElementById('obsLabel').textContent = s.label;
+                document.getElementById('obsLabel').style.color = s.color;
+                document.getElementById('obsDesc').textContent = status === 'red'
+                    ? 'Descreve a incidência grave encontrada:'
+                    : 'O que encontraste? Regista faltas ou incidências:';
+                document.getElementById('obsText').style.borderColor = s.color + '60';
+                document.getElementById('btnSend').style.background = s.color;
+                document.getElementById('obsText').value = '';
+                document.getElementById('btnSend').disabled = true;
+                show('obsScreen');
+                setTimeout(() => document.getElementById('obsText').focus(), 100);
+            }
+        }
+
+        // ═══ OBS TEXT LISTENER ═══
+        document.getElementById('obsText').addEventListener('input', function() {
+            document.getElementById('btnSend').disabled = !this.value.trim();
+        });
+
+        function backToButtons() {
+            selectedStatus = null;
+            show('buttonsScreen');
+        }
+
+        function send() {
+            const notes = document.getElementById('obsText').value.trim();
+            if (!notes && selectedStatus !== 'green') return;
+            save(selectedStatus, notes);
+        }
+
+        // ═══ SAVE TO FIREBASE — mesma estrutura que o property-manager.html ═══
+        async function save(status, notes) {
+            // Disable all buttons
+            document.querySelectorAll('.sem-btn, .btn-send').forEach(b => b.disabled = true);
+
+            if (!database) {
+                alert('Sem ligação ao servidor. Tente novamente.');
+                document.querySelectorAll('.sem-btn, .btn-send').forEach(b => b.disabled = false);
+                return;
+            }
+
+            const data = {
+                code: aptCode,
+                status: status,
+                notes: notes || '',
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                await database.ref('properties/' + aptCode).set(data);
+                // Show done screen
+                const s = STATUS[status];
+                const circle = document.getElementById('doneCircle');
+                circle.style.borderColor = s.color;
+                circle.style.background = s.color + '15';
+                circle.style.boxShadow = '0 0 30px ' + s.color + '20';
+                circle.textContent = status === 'green' ? '✓' : status === 'yellow' ? '!' : '⚠';
+                document.getElementById('doneSub').innerHTML = aptCode + ' — <span style="color:' + s.color + ';font-weight:600">' + s.label + '</span>';
+                show('doneScreen');
+            } catch(e) {
+                alert('Erro ao guardar: ' + e.message);
+                document.querySelectorAll('.sem-btn, .btn-send').forEach(b => b.disabled = false);
+            }
+        }
+    </script>
+</body>
+</html>
